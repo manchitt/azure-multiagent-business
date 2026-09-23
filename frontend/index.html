@@ -16,18 +16,27 @@
   <!-- ==================== SIDEBAR ==================== -->
   <aside id="chat-sidebar" class="w-64 bg-[#09090B] border-r border-neutral-900 flex-col justify-between hidden md:flex transition-all duration-200 z-30 shrink-0 select-none">
     
-    <!-- Top Action: New Chat -->
+    <!-- Top Action: Brand & New Chat -->
     <div class="p-3 border-b border-neutral-900/80">
       <div class="flex items-center justify-between mb-3 px-1">
-        <div class="flex items-center space-x-2">
-          <div class="w-5 h-5 rounded bg-white text-black flex items-center justify-center font-bold text-[11px]">
-            ⚡
+        <div class="flex items-center space-x-2.5">
+          <!-- Minimal Hexagonal Agent Mesh Logo -->
+          <div class="w-6 h-6 shrink-0">
+            <svg viewBox="0 0 32 32" class="w-full h-full text-white" fill="none">
+              <rect width="32" height="32" rx="7" fill="#141416" stroke="rgba(255,255,255,0.15)" stroke-width="1"/>
+              <path d="M16 7L24 11.5V20.5L16 25L8 20.5V11.5L16 7Z" stroke="white" stroke-width="1.25" stroke-linejoin="round"/>
+              <path d="M16 7V16M24 20.5L16 16M8 20.5L16 16" stroke="white" stroke-width="1" stroke-linejoin="round" opacity="0.6"/>
+              <circle cx="16" cy="16" r="2" fill="white"/>
+              <circle cx="16" cy="7" r="1.5" fill="#38BDF8"/>
+              <circle cx="24" cy="20.5" r="1.5" fill="#34D399"/>
+              <circle cx="8" cy="20.5" r="1.5" fill="#A78BFA"/>
+            </svg>
           </div>
-          <span class="font-bold text-xs tracking-tight text-white uppercase">Multi Agent Business</span>
+          <span class="font-bold text-xs tracking-tight text-white uppercase truncate">Multi Agent Business</span>
         </div>
       </div>
 
-      <button id="btn-new-chat" class="w-full flex items-center justify-between px-3 py-2 rounded-lg bg-neutral-900 hover:bg-neutral-800 border border-neutral-800 text-xs font-medium text-neutral-200 transition-colors">
+      <button id="btn-new-chat" class="w-full flex items-center justify-between px-3 py-2 rounded-lg bg-neutral-900 hover:bg-neutral-800 border border-neutral-800 text-xs font-medium text-neutral-200 transition-colors cursor-pointer">
         <span class="flex items-center space-x-2">
           <svg class="w-4 h-4 text-neutral-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"></path>
@@ -38,11 +47,14 @@
       </button>
     </div>
 
-    <!-- History List -->
+    <!-- History List (Full Chats Saved) -->
     <div class="flex-1 overflow-y-auto px-2 py-3 space-y-1">
-      <div class="px-2 text-[10px] font-mono text-neutral-500 uppercase tracking-wider mb-2">Recent Inquiries</div>
+      <div class="flex items-center justify-between px-2 mb-2">
+        <span class="text-[10px] font-mono text-neutral-500 uppercase tracking-wider">Recent Chats</span>
+        <button id="btn-clear-all-history" class="text-[10px] font-mono text-neutral-600 hover:text-neutral-400 transition-colors" title="Clear all chat history">Clear All</button>
+      </div>
       <div id="chat-history-list" class="space-y-1">
-        <!-- Rendered dynamically -->
+        <!-- Rendered dynamically with title, time and delete button -->
       </div>
     </div>
 
@@ -65,7 +77,7 @@
     <header class="h-12 border-b border-neutral-900 bg-black/80 flex items-center justify-between px-4 shrink-0 z-20 backdrop-blur-md">
       <div class="flex items-center space-x-3">
         <!-- Sidebar Toggle (Mobile / Desktop) -->
-        <button id="btn-toggle-sidebar" class="p-1.5 rounded-lg hover:bg-neutral-900 text-neutral-400 hover:text-white transition-colors" title="Toggle Sidebar">
+        <button id="btn-toggle-sidebar" class="p-1.5 rounded-lg hover:bg-neutral-900 text-neutral-400 hover:text-white transition-colors cursor-pointer" title="Toggle Sidebar">
           <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"></path>
           </svg>
@@ -73,6 +85,13 @@
 
         <!-- Model / App Selector -->
         <div class="flex items-center space-x-2">
+          <!-- Logo in header -->
+          <div class="w-4 h-4 shrink-0">
+            <svg viewBox="0 0 32 32" class="w-full h-full text-white" fill="none">
+              <path d="M16 6L25 11V21L16 26L7 21V11L16 6Z" stroke="white" stroke-width="2" stroke-linejoin="round"/>
+              <circle cx="16" cy="16" r="3" fill="white"/>
+            </svg>
+          </div>
           <span class="font-bold text-sm text-white tracking-tight">MULTI AGENT BUSINESS ASSISTANT</span>
           <span class="text-[10px] px-2 py-0.5 rounded-full bg-neutral-900 border border-neutral-800 text-neutral-400 font-mono">
             gpt-4.1-mini
@@ -81,9 +100,9 @@
       </div>
 
       <div class="flex items-center space-x-2">
-        <button id="btn-clear-chat" class="p-1.5 rounded-lg hover:bg-neutral-900 text-neutral-500 hover:text-neutral-300 transition-colors text-xs" title="Clear current view">
+        <button id="btn-clear-chat" class="p-1.5 rounded-lg hover:bg-neutral-900 text-neutral-500 hover:text-neutral-300 transition-colors text-xs cursor-pointer" title="Start new chat">
           <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path>
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"></path>
           </svg>
         </button>
       </div>
@@ -95,8 +114,17 @@
       <!-- Empty State (When no messages yet) -->
       <div id="empty-state" class="flex flex-col items-center justify-center min-h-[70vh] text-center max-w-2xl mx-auto px-4 select-none">
         
-        <div class="w-12 h-12 rounded-2xl bg-white text-black flex items-center justify-center font-extrabold text-xl mb-4 shadow-md">
-          ⚡
+        <!-- Large Minimal Logo -->
+        <div class="w-14 h-14 rounded-2xl bg-[#0F0F12] border border-neutral-800 flex items-center justify-center mb-4 shadow-xl p-2.5">
+          <svg viewBox="0 0 32 32" class="w-full h-full text-white" fill="none">
+            <rect width="32" height="32" rx="6" fill="#141416"/>
+            <path d="M16 6L25 11V21L16 26L7 21V11L16 6Z" stroke="white" stroke-width="1.5" stroke-linejoin="round"/>
+            <path d="M16 6V16M25 21L16 16M7 21L16 16" stroke="white" stroke-width="1" stroke-linejoin="round" opacity="0.6"/>
+            <circle cx="16" cy="16" r="2.5" fill="white"/>
+            <circle cx="16" cy="6" r="1.75" fill="#38BDF8"/>
+            <circle cx="25" cy="21" r="1.75" fill="#34D399"/>
+            <circle cx="7" cy="21" r="1.75" fill="#A78BFA"/>
+          </svg>
         </div>
 
         <h1 class="text-2xl sm:text-3xl font-bold tracking-tight text-white mb-2">
@@ -118,7 +146,7 @@
           <span class="text-purple-400">Strategy</span>
         </div>
 
-        <!-- ChatGPT-Style Suggestion Starter Cards -->
+        <!-- Suggestion Starter Cards -->
         <div class="grid grid-cols-1 sm:grid-cols-2 gap-2.5 w-full text-left">
           <button data-starter="preset1" class="p-3.5 rounded-xl bg-[#0E0E10] hover:bg-[#161619] border border-neutral-900 hover:border-neutral-800 transition-all text-xs group cursor-pointer">
             <div class="font-semibold text-neutral-200 group-hover:text-white mb-1">Cloud AI Competitive Moat</div>
@@ -154,6 +182,15 @@
     <div class="p-4 bg-gradient-to-t from-black via-black/95 to-transparent shrink-0">
       <div class="max-w-3xl mx-auto">
         
+        <!-- Live Voice Listening Badge (Hidden by default) -->
+        <div id="voice-status-banner" class="hidden mb-2 px-3 py-1.5 rounded-lg bg-neutral-900 border border-red-900/60 text-xs font-mono text-red-400 flex items-center justify-between">
+          <span class="flex items-center space-x-2">
+            <span class="w-2 h-2 rounded-full bg-red-500 animate-pulse"></span>
+            <span>Listening... Speak your business inquiry now.</span>
+          </span>
+          <button id="btn-cancel-voice" class="text-neutral-500 hover:text-neutral-300 text-[11px]">Cancel</button>
+        </div>
+
         <!-- Input Box -->
         <div class="relative bg-[#141416] border border-neutral-800 focus-within:border-neutral-600 rounded-2xl p-2.5 transition-colors shadow-2xl">
           <textarea 
@@ -171,22 +208,37 @@
               </span>
             </div>
 
-            <!-- Send Button -->
-            <button 
-              id="btn-send" 
-              disabled 
-              class="w-8 h-8 rounded-full bg-white hover:bg-neutral-200 text-black flex items-center justify-center transition-opacity opacity-30 cursor-not-allowed disabled:cursor-not-allowed shrink-0"
-              title="Send prompt"
-            >
-              <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M5 10l7-7m0 0l7 7m-7-7v18"></path>
-              </svg>
-            </button>
+            <!-- Action Buttons: Voice Mic + Send -->
+            <div class="flex items-center space-x-2">
+              
+              <!-- Voice Search / Speech-to-Text Button -->
+              <button 
+                id="btn-voice-search" 
+                class="w-8 h-8 rounded-full bg-neutral-900 hover:bg-neutral-800 text-neutral-300 hover:text-white flex items-center justify-center transition-all cursor-pointer border border-neutral-800"
+                title="Voice Search (Click to speak)"
+              >
+                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 11a7 7 0 01-7 7m0 0a7 7 0 01-7-7m7 7v4m0 0H8m4 0h4m-4-8a3 3 0 01-3-3V5a3 3 0 116 0v6a3 3 0 01-3 3z"></path>
+                </svg>
+              </button>
+
+              <!-- Send Button -->
+              <button 
+                id="btn-send" 
+                disabled 
+                class="w-8 h-8 rounded-full bg-white hover:bg-neutral-200 text-black flex items-center justify-center transition-opacity opacity-30 cursor-not-allowed disabled:cursor-not-allowed shrink-0"
+                title="Send prompt"
+              >
+                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M5 10l7-7m0 0l7 7m-7-7v18"></path>
+                </svg>
+              </button>
+            </div>
           </div>
         </div>
 
         <div class="text-[11px] text-neutral-600 text-center mt-2 font-sans select-none">
-          MULTI AGENT BUSINESS ASSISTANT can make mistakes. Verify important business & financial data.
+          MULTI AGENT BUSINESS ASSISTANT • Built on Microsoft Azure AI Foundry
         </div>
 
       </div>

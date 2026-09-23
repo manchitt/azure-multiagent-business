@@ -104,6 +104,32 @@ body {
   color: #38BDF8;
 }
 
+/* Voice Search Microphone Pulse */
+@keyframes mic-pulse {
+  0% {
+    box-shadow: 0 0 0 0 rgba(239, 68, 68, 0.6);
+  }
+  70% {
+    box-shadow: 0 0 0 8px rgba(239, 68, 68, 0);
+  }
+  100% {
+    box-shadow: 0 0 0 0 rgba(239, 68, 68, 0);
+  }
+}
+
+.mic-active {
+  background-color: #EF4444 !important;
+  color: #FFFFFF !important;
+  animation: mic-pulse 1.5s infinite;
+}
+
+/* Active Chat Item in Sidebar */
+.chat-history-active {
+  background-color: #1F1F23 !important;
+  color: #FFFFFF !important;
+  border-color: rgba(255, 255, 255, 0.12) !important;
+}
+
 /* Accordion details */
 details summary::-webkit-details-marker {
   display: none;

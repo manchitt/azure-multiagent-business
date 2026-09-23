@@ -1,17 +1,22 @@
 /**
- * MULTI AGENT BUSINESS ASSISTANT — ChatGPT-Style Pure Black Controller
- * Connects directly to same-origin POST /chat (Azure AI Foundry business-orchestrator:7)
+ * MULTI AGENT BUSINESS ASSISTANT — ChatGPT-Style Controller
+ * Features:
+ * 1. Live Voice Search (Web Speech API)
+ * 2. Persistent Multi-Turn Chat History in Recents (Full Conversation Recall)
+ * 3. Direct integration with same-origin POST /chat (Azure AI Foundry business-orchestrator:7)
  */
 
 const API = "";
 
 class ChatApp {
   constructor() {
-    this.messages = [];
+    this.conversations = this.loadConversations();
+    this.activeConversationId = null;
     this.isGenerating = false;
-    this.history = this.loadHistory();
+    this.isListening = false;
+    this.recognition = null;
 
-    // Starter prompts
+    // Starter Prompts
     this.starters = {
       preset1: "Analyze Microsoft Azure AI Foundry's enterprise moat in multi-agent orchestration compared to AWS Bedrock and GCP Vertex AI. Evaluate developer adoption, GPT-4.1-mini cost efficiency, and 90-day market capture strategy.",
       preset2: "Formulate an expansion plan for a B2B FinTech SaaS platform launching autonomous multi-agent underwriting on Azure. Include unit economics, gross margin projections, and a 30-60-90 day execution roadmap.",
@@ -21,17 +26,22 @@ class ChatApp {
 
     this.initElements();
     this.initEventListeners();
+    this.initVoiceSearch();
     this.renderHistory();
   }
 
   initElements() {
     this.chatInput = document.getElementById('chat-input');
     this.btnSend = document.getElementById('btn-send');
+    this.btnVoice = document.getElementById('btn-voice-search');
+    this.voiceBanner = document.getElementById('voice-status-banner');
+    this.btnCancelVoice = document.getElementById('btn-cancel-voice');
     this.emptyState = document.getElementById('empty-state');
     this.messagesContainer = document.getElementById('messages-container');
     this.scrollArea = document.getElementById('chat-scroll-area');
     this.btnNewChat = document.getElementById('btn-new-chat');
     this.btnClearChat = document.getElementById('btn-clear-chat');
+    this.btnClearAllHistory = document.getElementById('btn-clear-all-history');
     this.btnToggleSidebar = document.getElementById('btn-toggle-sidebar');
     this.sidebar = document.getElementById('chat-sidebar');
     this.historyList = document.getElementById('chat-history-list');
@@ -43,7 +53,7 @@ class ChatApp {
       this.btnSend.addEventListener('click', () => this.sendMessage());
     }
 
-    // Textarea input & auto-resize
+    // Input auto-resizing & Enter key
     if (this.chatInput) {
       this.chatInput.addEventListener('input', () => {
         this.autoResizeInput();
@@ -71,15 +81,27 @@ class ChatApp {
       });
     });
 
-    // New Chat & Clear
+    // New Chat & Clear View
     if (this.btnNewChat) {
-      this.btnNewChat.addEventListener('click', () => this.resetChat());
+      this.btnNewChat.addEventListener('click', () => this.startNewChat());
     }
     if (this.btnClearChat) {
-      this.btnClearChat.addEventListener('click', () => this.resetChat());
+      this.btnClearChat.addEventListener('click', () => this.startNewChat());
     }
 
-    // Sidebar Toggle (Mobile / Desktop)
+    // Clear All History
+    if (this.btnClearAllHistory) {
+      this.btnClearAllHistory.addEventListener('click', () => {
+        if (confirm("Clear all saved chat history?")) {
+          this.conversations = [];
+          this.saveConversations();
+          this.startNewChat();
+          this.renderHistory();
+        }
+      });
+    }
+
+    // Toggle Sidebar
     if (this.btnToggleSidebar && this.sidebar) {
       this.btnToggleSidebar.addEventListener('click', () => {
         this.sidebar.classList.toggle('hidden');
@@ -90,11 +112,92 @@ class ChatApp {
     document.addEventListener('keydown', (e) => {
       if ((e.metaKey || e.ctrlKey) && e.key.toLowerCase() === 'k') {
         e.preventDefault();
-        this.resetChat();
+        this.startNewChat();
       }
     });
   }
 
+  /* ==================== VOICE SEARCH FEATURE ==================== */
+  initVoiceSearch() {
+    const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+    if (!SpeechRecognition) {
+      if (this.btnVoice) {
+        this.btnVoice.title = "Voice recognition is not supported in this browser.";
+        this.btnVoice.classList.add("opacity-40");
+      }
+      return;
+    }
+
+    this.recognition = new SpeechRecognition();
+    this.recognition.continuous = false;
+    this.recognition.interimResults = true;
+    this.recognition.lang = "en-US";
+
+    this.recognition.onstart = () => {
+      this.isListening = true;
+      if (this.btnVoice) this.btnVoice.classList.add('mic-active');
+      if (this.voiceBanner) this.voiceBanner.classList.remove('hidden');
+    };
+
+    this.recognition.onresult = (event) => {
+      let finalTranscript = '';
+      for (let i = event.resultIndex; i < event.results.length; ++i) {
+        finalTranscript += event.results[i][0].transcript;
+      }
+      if (this.chatInput && finalTranscript) {
+        this.chatInput.value = finalTranscript;
+        this.autoResizeInput();
+        this.updateSendButtonState();
+      }
+    };
+
+    this.recognition.onerror = (event) => {
+      console.warn("Voice search error:", event.error);
+      this.stopVoiceListening();
+    };
+
+    this.recognition.onend = () => {
+      this.stopVoiceListening();
+    };
+
+    // Voice button click handler
+    if (this.btnVoice) {
+      this.btnVoice.addEventListener('click', () => {
+        if (this.isListening) {
+          this.stopVoiceListening();
+        } else {
+          this.startVoiceListening();
+        }
+      });
+    }
+
+    // Cancel voice listening button
+    if (this.btnCancelVoice) {
+      this.btnCancelVoice.addEventListener('click', () => {
+        this.stopVoiceListening();
+      });
+    }
+  }
+
+  startVoiceListening() {
+    if (!this.recognition) return;
+    try {
+      this.recognition.start();
+    } catch (e) {
+      this.stopVoiceListening();
+    }
+  }
+
+  stopVoiceListening() {
+    this.isListening = false;
+    if (this.btnVoice) this.btnVoice.classList.remove('mic-active');
+    if (this.voiceBanner) this.voiceBanner.classList.add('hidden');
+    if (this.recognition) {
+      try { this.recognition.stop(); } catch {}
+    }
+  }
+
+  /* ==================== CHAT ACTIONS & API ==================== */
   autoResizeInput() {
     if (!this.chatInput) return;
     this.chatInput.style.height = 'auto';
@@ -102,7 +205,7 @@ class ChatApp {
   }
 
   updateSendButtonState() {
-    const text = this.chatInput.value.trim();
+    const text = this.chatInput ? this.chatInput.value.trim() : '';
     if (text && !this.isGenerating) {
       this.btnSend.disabled = false;
       this.btnSend.classList.remove('opacity-30', 'cursor-not-allowed');
@@ -114,8 +217,9 @@ class ChatApp {
     }
   }
 
-  resetChat() {
-    this.messages = [];
+  startNewChat() {
+    this.stopVoiceListening();
+    this.activeConversationId = null;
     this.messagesContainer.innerHTML = '';
     this.messagesContainer.classList.add('hidden');
     this.emptyState.classList.remove('hidden');
@@ -125,14 +229,30 @@ class ChatApp {
       this.updateSendButtonState();
       this.chatInput.focus();
     }
+    this.renderHistory();
   }
 
   async sendMessage() {
     const prompt = this.chatInput.value.trim();
     if (!prompt || this.isGenerating) return;
 
+    this.stopVoiceListening();
     this.isGenerating = true;
     this.updateSendButtonState();
+
+    // Ensure we have an active conversation
+    if (!this.activeConversationId) {
+      const newConv = {
+        id: `conv_${Date.now()}`,
+        title: prompt.length > 40 ? prompt.substring(0, 40) + '...' : prompt,
+        timestamp: Date.now(),
+        messages: [],
+      };
+      this.conversations.unshift(newConv);
+      this.activeConversationId = newConv.id;
+    }
+
+    const currentConv = this.conversations.find(c => c.id === this.activeConversationId);
 
     // Transition from empty state to conversation view
     this.emptyState.classList.add('hidden');
@@ -140,7 +260,11 @@ class ChatApp {
 
     // 1. Render User Message
     this.appendUserMessage(prompt);
-    this.saveToHistory(prompt);
+    if (currentConv) {
+      currentConv.messages.push({ role: 'user', content: prompt });
+      this.saveConversations();
+      this.renderHistory();
+    }
 
     // Clear input
     this.chatInput.value = '';
@@ -152,7 +276,7 @@ class ChatApp {
     this.scrollToBottom();
 
     try {
-      // Direct call to same-origin POST /chat
+      // Call same-origin POST /chat
       const resp = await fetch(`${API}/chat`, {
         method: 'POST',
         headers: {
@@ -171,6 +295,12 @@ class ChatApp {
       
       // Update assistant bubble with real Azure AI Foundry response
       this.updateAssistantBubbleWithRealData(assistantRowId, data);
+
+      // Save assistant response to conversation history
+      if (currentConv) {
+        currentConv.messages.push({ role: 'assistant', data: data });
+        this.saveConversations();
+      }
 
     } catch (err) {
       console.error("Chat error:", err);
@@ -198,7 +328,7 @@ class ChatApp {
     row.id = rowId;
     row.className = 'message-row flex items-start space-x-3 text-neutral-300';
     row.innerHTML = `
-      <div class="w-7 h-7 rounded-lg bg-neutral-900 border border-neutral-800 flex items-center justify-center font-bold text-xs text-white shrink-0 mt-0.5">
+      <div class="w-7 h-7 rounded-lg bg-[#141416] border border-neutral-800 flex items-center justify-center font-bold text-xs text-white shrink-0 mt-0.5">
         ⚡
       </div>
       <div class="flex-1 space-y-3 min-w-0">
@@ -271,14 +401,14 @@ class ChatApp {
     }
 
     row.innerHTML = `
-      <div class="w-7 h-7 rounded-lg bg-neutral-900 border border-neutral-800 flex items-center justify-center font-bold text-xs text-white shrink-0 mt-0.5">
+      <div class="w-7 h-7 rounded-lg bg-[#141416] border border-neutral-800 flex items-center justify-center font-bold text-xs text-white shrink-0 mt-0.5">
         ⚡
       </div>
       <div class="flex-1 space-y-2 min-w-0">
         <!-- Orchestrator Step Accordion -->
         ${stepsHtml}
 
-        <!-- Real Synthesized Output from Azure AI Foundry -->
+        <!-- Real Output from Azure AI Foundry -->
         <div class="prose-chat whitespace-pre-wrap leading-relaxed">
           ${this.escapeHtml(data.response || 'No response returned.')}
         </div>
@@ -293,7 +423,7 @@ class ChatApp {
             <span>Latency: ${usage.latency_ms || 0}ms</span>
             <span>Model: ${data.model || 'gpt-4.1-mini'}</span>
           </div>
-          <button class="btn-copy px-2 py-0.5 rounded bg-neutral-900 hover:bg-neutral-800 border border-neutral-800 text-neutral-400 hover:text-white transition-colors" data-copy="${encodeURIComponent(data.response || '')}">
+          <button class="btn-copy px-2 py-0.5 rounded bg-neutral-900 hover:bg-neutral-800 border border-neutral-800 text-neutral-400 hover:text-white transition-colors cursor-pointer" data-copy="${encodeURIComponent(data.response || '')}">
             Copy
           </button>
         </div>
@@ -346,49 +476,105 @@ class ChatApp {
       .replace(/'/g, '&#039;');
   }
 
-  loadHistory() {
+  /* ==================== MULTI-SESSION CHAT HISTORY ==================== */
+  loadConversations() {
     try {
-      const stored = localStorage.getItem('maba_chat_history');
+      const stored = localStorage.getItem('maba_full_conversations');
       return stored ? JSON.parse(stored) : [];
     } catch {
       return [];
     }
   }
 
-  saveToHistory(prompt) {
-    this.history.unshift({ text: prompt, time: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) });
-    if (this.history.length > 20) this.history = this.history.slice(0, 20);
+  saveConversations() {
     try {
-      localStorage.setItem('maba_chat_history', JSON.stringify(this.history));
-    } catch {}
+      localStorage.setItem('maba_full_conversations', JSON.stringify(this.conversations));
+    } catch (e) {
+      console.warn("Storage error:", e);
+    }
+  }
+
+  loadConversationById(convId) {
+    const conv = this.conversations.find(c => c.id === convId);
+    if (!conv) return;
+
+    this.activeConversationId = conv.id;
+    this.emptyState.classList.add('hidden');
+    this.messagesContainer.classList.remove('hidden');
+    this.messagesContainer.innerHTML = '';
+
+    // Replay all messages in this conversation
+    conv.messages.forEach((msg, idx) => {
+      if (msg.role === 'user') {
+        this.appendUserMessage(msg.content);
+      } else if (msg.role === 'assistant') {
+        const rowId = `history-row-${idx}-${Date.now()}`;
+        const row = document.createElement('div');
+        row.id = rowId;
+        row.className = 'message-row flex items-start space-x-3 text-neutral-300';
+        this.messagesContainer.appendChild(row);
+        this.updateAssistantBubbleWithRealData(rowId, msg.data);
+      }
+    });
+
     this.renderHistory();
+    this.scrollToBottom();
+  }
+
+  deleteConversation(convId, event) {
+    if (event) event.stopPropagation();
+    this.conversations = this.conversations.filter(c => c.id !== convId);
+    this.saveConversations();
+
+    if (this.activeConversationId === convId) {
+      this.startNewChat();
+    } else {
+      this.renderHistory();
+    }
   }
 
   renderHistory() {
     if (!this.historyList) return;
     this.historyList.innerHTML = '';
 
-    if (this.history.length === 0) {
+    if (this.conversations.length === 0) {
       this.historyList.innerHTML = `
-        <div class="px-2 py-4 text-[11px] text-neutral-600 font-mono italic">No recent chats yet</div>
+        <div class="px-2 py-6 text-[11px] text-neutral-600 font-mono italic text-center">No saved chats</div>
       `;
       return;
     }
 
-    this.history.forEach(item => {
-      const btn = document.createElement('button');
-      btn.className = 'w-full text-left px-2.5 py-1.5 rounded hover:bg-neutral-900 text-xs text-neutral-400 hover:text-neutral-200 truncate transition-colors font-sans block';
-      btn.textContent = item.text;
-      btn.title = item.text;
-      btn.addEventListener('click', () => {
-        if (this.chatInput) {
-          this.chatInput.value = item.text;
-          this.autoResizeInput();
-          this.updateSendButtonState();
-          this.sendMessage();
-        }
+    this.conversations.forEach(conv => {
+      const isActive = this.activeConversationId === conv.id;
+      const item = document.createElement('div');
+      item.className = `group flex items-center justify-between px-2.5 py-1.5 rounded text-xs border border-transparent transition-all cursor-pointer ${
+        isActive ? 'chat-history-active' : 'text-neutral-400 hover:text-neutral-200 hover:bg-neutral-900'
+      }`;
+
+      item.innerHTML = `
+        <div class="truncate mr-2 flex-1">
+          <div class="truncate text-xs font-sans">${this.escapeHtml(conv.title)}</div>
+          <div class="text-[9px] text-neutral-600 font-mono mt-0.5">${new Date(conv.timestamp).toLocaleDateString([], { month: 'short', day: 'numeric' })}</div>
+        </div>
+        <button class="btn-del-conv opacity-0 group-hover:opacity-100 p-1 rounded hover:bg-neutral-800 text-neutral-500 hover:text-red-400 transition-opacity" title="Delete chat">
+          <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path>
+          </svg>
+        </button>
+      `;
+
+      item.addEventListener('click', () => {
+        this.loadConversationById(conv.id);
       });
-      this.historyList.appendChild(btn);
+
+      const delBtn = item.querySelector('.btn-del-conv');
+      if (delBtn) {
+        delBtn.addEventListener('click', (e) => {
+          this.deleteConversation(conv.id, e);
+        });
+      }
+
+      this.historyList.appendChild(item);
     });
   }
 }
