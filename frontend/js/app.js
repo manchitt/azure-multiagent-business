@@ -1,35 +1,38 @@
 /**
- * Minimal Application Controller
- * Handles health checking against Azure AI Foundry and initializes the query console.
+ * MULTI AGENT BUSINESS ASSISTANT — App Bootstrap
  */
 
 const APP_API = "";
 
 document.addEventListener('DOMContentLoaded', () => {
-  // Initialize Query Console
-  new QueryConsole();
+  // Initialize the ChatGPT-style interface
+  new ChatApp();
 
-  // Check Azure AI Foundry Backend Status
+  // Poll system status from GET /api/health
   checkSystemStatus();
 });
 
-/**
- * Checks system status against GET /api/health
- */
 async function checkSystemStatus() {
-  const statusPill = document.getElementById('azure-status-pill');
-  const statusText = document.getElementById('azure-status-text');
-  if (!statusPill || !statusText) return;
+  const sidebarAgentLabel = document.getElementById('sidebar-agent-label');
+  const bottomStatusLabel = document.getElementById('bottom-status-label');
+  const sidebarDot = document.getElementById('sidebar-status-dot');
 
   try {
     const resp = await fetch(`${APP_API}/api/health`);
     if (resp.ok) {
       const data = await resp.json();
-      statusText.textContent = `${data.agent || "business-orchestrator"}:v${data.version || "7"}`;
-      statusPill.classList.remove('text-neutral-500', 'border-neutral-800');
-      statusPill.classList.add('text-neutral-300', 'border-neutral-700');
+      const label = `${data.agent || 'business-orchestrator'}:v${data.version || '7'}`;
+      if (sidebarAgentLabel) sidebarAgentLabel.textContent = label;
+      if (bottomStatusLabel) bottomStatusLabel.textContent = `${label} Active`;
+      if (sidebarDot) {
+        sidebarDot.className = "w-2 h-2 rounded-full bg-emerald-500";
+      }
     }
   } catch (err) {
-    statusText.textContent = "Connecting...";
+    if (sidebarAgentLabel) sidebarAgentLabel.textContent = "Connecting to Foundry...";
+    if (bottomStatusLabel) bottomStatusLabel.textContent = "Connecting...";
+    if (sidebarDot) {
+      sidebarDot.className = "w-2 h-2 rounded-full bg-amber-500 animate-pulse";
+    }
   }
 }

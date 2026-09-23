@@ -1,183 +1,198 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="en" class="h-full">
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Azure AI Foundry • Multi-Agent Assistant</title>
+  <title>MULTI AGENT BUSINESS ASSISTANT</title>
   
   <!-- Tailwind CSS via CDN -->
   <script src="https://cdn.tailwindcss.com"></script>
   
-  <!-- Custom Minimal Pure Black Styles -->
+  <!-- Custom ChatGPT-Style Pure Black Theme -->
   <link rel="stylesheet" href="/css/styles.css">
 </head>
-<body class="bg-black text-neutral-200 min-h-screen flex flex-col font-sans selection:bg-neutral-800 selection:text-white">
+<body class="h-full bg-black text-neutral-200 flex overflow-hidden">
 
-  <!-- ==================== MINIMAL HEADER ==================== -->
-  <header class="border-b border-neutral-900 bg-black/90 sticky top-0 z-40 backdrop-blur-md">
-    <div class="max-w-6xl mx-auto px-4 sm:px-6 h-14 flex items-center justify-between">
-      <!-- Title & Branding -->
+  <!-- ==================== SIDEBAR ==================== -->
+  <aside id="chat-sidebar" class="w-64 bg-[#09090B] border-r border-neutral-900 flex-col justify-between hidden md:flex transition-all duration-200 z-30 shrink-0 select-none">
+    
+    <!-- Top Action: New Chat -->
+    <div class="p-3 border-b border-neutral-900/80">
+      <div class="flex items-center justify-between mb-3 px-1">
+        <div class="flex items-center space-x-2">
+          <div class="w-5 h-5 rounded bg-white text-black flex items-center justify-center font-bold text-[11px]">
+            ⚡
+          </div>
+          <span class="font-bold text-xs tracking-tight text-white uppercase">Multi Agent Business</span>
+        </div>
+      </div>
+
+      <button id="btn-new-chat" class="w-full flex items-center justify-between px-3 py-2 rounded-lg bg-neutral-900 hover:bg-neutral-800 border border-neutral-800 text-xs font-medium text-neutral-200 transition-colors">
+        <span class="flex items-center space-x-2">
+          <svg class="w-4 h-4 text-neutral-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"></path>
+          </svg>
+          <span>New Chat</span>
+        </span>
+        <span class="text-[10px] text-neutral-500 font-mono">⌘K</span>
+      </button>
+    </div>
+
+    <!-- History List -->
+    <div class="flex-1 overflow-y-auto px-2 py-3 space-y-1">
+      <div class="px-2 text-[10px] font-mono text-neutral-500 uppercase tracking-wider mb-2">Recent Inquiries</div>
+      <div id="chat-history-list" class="space-y-1">
+        <!-- Rendered dynamically -->
+      </div>
+    </div>
+
+    <!-- Bottom Status / System Info -->
+    <div class="p-3 border-t border-neutral-900 bg-black/40 text-xs font-mono">
+      <div class="flex items-center justify-between text-neutral-400 mb-1">
+        <span class="text-[11px] font-semibold text-white">Azure AI Foundry</span>
+        <span id="sidebar-status-dot" class="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span>
+      </div>
+      <div class="text-[10px] text-neutral-500 truncate" id="sidebar-agent-label">business-orchestrator:7</div>
+      <div class="text-[9px] text-neutral-600 mt-1">GPT-4.1-mini • A2A Mesh</div>
+    </div>
+
+  </aside>
+
+  <!-- ==================== MAIN CHAT VIEW ==================== -->
+  <div class="flex-1 flex flex-col h-full bg-black relative min-w-0">
+
+    <!-- Topbar Header -->
+    <header class="h-12 border-b border-neutral-900 bg-black/80 flex items-center justify-between px-4 shrink-0 z-20 backdrop-blur-md">
       <div class="flex items-center space-x-3">
-        <div class="w-6 h-6 rounded bg-neutral-900 border border-neutral-800 flex items-center justify-center text-xs font-mono text-white">
+        <!-- Sidebar Toggle (Mobile / Desktop) -->
+        <button id="btn-toggle-sidebar" class="p-1.5 rounded-lg hover:bg-neutral-900 text-neutral-400 hover:text-white transition-colors" title="Toggle Sidebar">
+          <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"></path>
+          </svg>
+        </button>
+
+        <!-- Model / App Selector -->
+        <div class="flex items-center space-x-2">
+          <span class="font-bold text-sm text-white tracking-tight">MULTI AGENT BUSINESS ASSISTANT</span>
+          <span class="text-[10px] px-2 py-0.5 rounded-full bg-neutral-900 border border-neutral-800 text-neutral-400 font-mono">
+            gpt-4.1-mini
+          </span>
+        </div>
+      </div>
+
+      <div class="flex items-center space-x-2">
+        <button id="btn-clear-chat" class="p-1.5 rounded-lg hover:bg-neutral-900 text-neutral-500 hover:text-neutral-300 transition-colors text-xs" title="Clear current view">
+          <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path>
+          </svg>
+        </button>
+      </div>
+    </header>
+
+    <!-- Scrollable Messages Area -->
+    <div id="chat-scroll-area" class="flex-1 overflow-y-auto overflow-x-hidden p-4 sm:p-6 space-y-6">
+      
+      <!-- Empty State (When no messages yet) -->
+      <div id="empty-state" class="flex flex-col items-center justify-center min-h-[70vh] text-center max-w-2xl mx-auto px-4 select-none">
+        
+        <div class="w-12 h-12 rounded-2xl bg-white text-black flex items-center justify-center font-extrabold text-xl mb-4 shadow-md">
           ⚡
         </div>
-        <div class="flex items-center space-x-2">
-          <span class="font-semibold text-sm text-white tracking-tight">Multi-Agent Business Assistant</span>
-          <span class="text-[11px] text-neutral-500 font-mono hidden sm:inline">• Azure AI Foundry</span>
-        </div>
-      </div>
 
-      <!-- Live Orchestrator Status -->
-      <div id="azure-status-pill" class="flex items-center space-x-2 px-2.5 py-1 rounded-full bg-neutral-950 border border-neutral-800 text-xs font-mono text-neutral-400">
-        <span class="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse"></span>
-        <span id="azure-status-text">Connecting to Foundry...</span>
-      </div>
-    </div>
-  </header>
+        <h1 class="text-2xl sm:text-3xl font-bold tracking-tight text-white mb-2">
+          MULTI AGENT BUSINESS ASSISTANT
+        </h1>
 
-  <!-- ==================== MAIN CONTENT ==================== -->
-  <main class="flex-1 max-w-6xl w-full mx-auto px-4 sm:px-6 py-8 flex flex-col space-y-6">
+        <p class="text-sm text-neutral-400 mb-6 max-w-md">
+          Autonomous business intelligence coordinated via Microsoft Azure AI Foundry with specialized Research, Analyst, and Strategy agents.
+        </p>
 
-    <!-- Agent Pipeline Strip -->
-    <div class="p-3 rounded-lg border border-neutral-900 bg-neutral-950 flex flex-wrap items-center justify-between gap-2 text-xs font-mono text-neutral-400">
-      <div class="flex items-center space-x-2">
-        <span class="text-neutral-500 text-[10px] uppercase tracking-wider font-semibold">Active Pipeline:</span>
-      </div>
-      <div class="flex flex-wrap items-center gap-2">
-        <span class="px-2 py-0.5 rounded bg-neutral-900 border border-neutral-800 text-neutral-200">business-orchestrator:7</span>
-        <span class="text-neutral-600">→</span>
-        <span class="px-2 py-0.5 rounded bg-neutral-900/60 border border-neutral-800/80 text-sky-400">🔎 Research (Web)</span>
-        <span class="text-neutral-600">→</span>
-        <span class="px-2 py-0.5 rounded bg-neutral-900/60 border border-neutral-800/80 text-emerald-400">📊 Analyst (Grounding)</span>
-        <span class="text-neutral-600">→</span>
-        <span class="px-2 py-0.5 rounded bg-neutral-900/60 border border-neutral-800/80 text-purple-400">🎯 Strategy</span>
-      </div>
-    </div>
-
-    <!-- Query Studio Card -->
-    <div class="minimal-panel p-5 space-y-4">
-      
-      <!-- Preset Chips -->
-      <div class="flex items-center space-x-2 overflow-x-auto pb-1 text-xs">
-        <span class="text-neutral-500 font-mono text-[11px] whitespace-nowrap">Presets:</span>
-        <button data-preset="preset1" class="px-2.5 py-1 rounded bg-neutral-900 hover:bg-neutral-800 border border-neutral-800 text-neutral-300 hover:text-white transition-colors whitespace-nowrap">
-          Cloud AI Moats: Azure vs AWS
-        </button>
-        <button data-preset="preset2" class="px-2.5 py-1 rounded bg-neutral-900 hover:bg-neutral-800 border border-neutral-800 text-neutral-300 hover:text-white transition-colors whitespace-nowrap">
-          FinTech Expansion & Economics
-        </button>
-        <button data-preset="preset3" class="px-2.5 py-1 rounded bg-neutral-900 hover:bg-neutral-800 border border-neutral-800 text-neutral-300 hover:text-white transition-colors whitespace-nowrap">
-          Enterprise Multi-Agent Due Diligence
-        </button>
-      </div>
-
-      <!-- Input Textarea -->
-      <div>
-        <textarea 
-          id="business-query-input" 
-          rows="3" 
-          class="w-full bg-black border border-neutral-800 focus:border-neutral-600 rounded-lg p-3 text-sm text-neutral-200 placeholder-neutral-600 focus:outline-none font-sans leading-relaxed resize-y transition-colors"
-          placeholder="Ask a strategic business question (e.g. competitor analysis, market sizing, due diligence)..."
-        >Analyze Microsoft Azure AI Foundry's enterprise moat in multi-agent orchestration compared to AWS Bedrock and GCP Vertex AI. Evaluate developer adoption, GPT-4.1-mini cost efficiency, and 90-day market capture strategy.</textarea>
-      </div>
-
-      <!-- Action Row -->
-      <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 pt-1">
-        <div class="flex items-center space-x-4 text-xs font-mono text-neutral-500">
-          <span>Model: <span class="text-neutral-300">gpt-4.1-mini</span></span>
-          <span>•</span>
-          <span>Protocol: <span class="text-neutral-300">A2A</span></span>
+        <!-- Pipeline indicator -->
+        <div class="inline-flex items-center space-x-2 px-3 py-1 rounded-full bg-neutral-950 border border-neutral-800 text-[11px] font-mono text-neutral-400 mb-8">
+          <span>Orchestrator:7</span>
+          <span class="text-neutral-600">→</span>
+          <span class="text-sky-400">Research</span>
+          <span class="text-neutral-600">→</span>
+          <span class="text-emerald-400">Analyst</span>
+          <span class="text-neutral-600">→</span>
+          <span class="text-purple-400">Strategy</span>
         </div>
 
-        <button 
-          id="run-orchestration-btn" 
-          class="px-5 py-2 rounded-lg bg-white hover:bg-neutral-200 text-black font-semibold text-xs transition-colors flex items-center justify-center space-x-2 cursor-pointer shadow-sm"
-        >
-          <span>Run Multi-Agent Workflow</span>
-          <span>↵</span>
-        </button>
+        <!-- ChatGPT-Style Suggestion Starter Cards -->
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-2.5 w-full text-left">
+          <button data-starter="preset1" class="p-3.5 rounded-xl bg-[#0E0E10] hover:bg-[#161619] border border-neutral-900 hover:border-neutral-800 transition-all text-xs group cursor-pointer">
+            <div class="font-semibold text-neutral-200 group-hover:text-white mb-1">Cloud AI Competitive Moat</div>
+            <div class="text-[11px] text-neutral-500 line-clamp-2">Analyze Azure AI Foundry vs AWS Bedrock developer adoption and unit economics.</div>
+          </button>
+
+          <button data-starter="preset2" class="p-3.5 rounded-xl bg-[#0E0E10] hover:bg-[#161619] border border-neutral-900 hover:border-neutral-800 transition-all text-xs group cursor-pointer">
+            <div class="font-semibold text-neutral-200 group-hover:text-white mb-1">FinTech SaaS Expansion</div>
+            <div class="text-[11px] text-neutral-500 line-clamp-2">Formulate a B2B FinTech underwriting expansion plan with 90-day roadmap.</div>
+          </button>
+
+          <button data-starter="preset3" class="p-3.5 rounded-xl bg-[#0E0E10] hover:bg-[#161619] border border-neutral-900 hover:border-neutral-800 transition-all text-xs group cursor-pointer">
+            <div class="font-semibold text-neutral-200 group-hover:text-white mb-1">Autonomous Workforce ROI</div>
+            <div class="text-[11px] text-neutral-500 line-clamp-2">Calculate cost savings and due diligence for 4-agent autonomous swarms.</div>
+          </button>
+
+          <button data-starter="preset4" class="p-3.5 rounded-xl bg-[#0E0E10] hover:bg-[#161619] border border-neutral-900 hover:border-neutral-800 transition-all text-xs group cursor-pointer">
+            <div class="font-semibold text-neutral-200 group-hover:text-white mb-1">Market Sizing & Strategy</div>
+            <div class="text-[11px] text-neutral-500 line-clamp-2">Evaluate CAGR, regulatory risks, and competitive moat defense strategies.</div>
+          </button>
+        </div>
+
+      </div>
+
+      <!-- Messages Stream -->
+      <div id="messages-container" class="max-w-3xl mx-auto space-y-6 hidden">
+        <!-- Message rows will be appended here dynamically -->
       </div>
 
     </div>
 
-    <!-- Studio Results Grid (Live Activity + Actual Response) -->
-    <div class="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
-
-      <!-- Live Orchestrator Activity (4 Cols) -->
-      <div class="lg:col-span-4 minimal-panel p-4 flex flex-col h-[560px]">
-        <div class="flex items-center justify-between pb-3 mb-3 border-b border-neutral-900 text-xs">
-          <span class="font-semibold text-neutral-300 uppercase tracking-wider text-[11px]">Orchestration Steps</span>
-          <span class="text-neutral-500 font-mono text-[10px]">A2A Log</span>
-        </div>
-
-        <div id="a2a-stream-container" class="flex-1 overflow-y-auto space-y-2 pr-1 text-xs font-mono">
-          <div class="text-center py-20 text-neutral-600 text-xs">
-            Awaiting query execution...
-          </div>
-        </div>
-      </div>
-
-      <!-- Response & Citations Card (8 Cols) -->
-      <div class="lg:col-span-8 minimal-panel flex flex-col h-[560px] overflow-hidden">
+    <!-- Pinned Bottom Input Bar (ChatGPT Style) -->
+    <div class="p-4 bg-gradient-to-t from-black via-black/95 to-transparent shrink-0">
+      <div class="max-w-3xl mx-auto">
         
-        <!-- Header & Telemetry -->
-        <div class="p-3.5 bg-neutral-950 border-b border-neutral-900 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2 text-xs">
-          <div class="flex items-center space-x-3">
-            <span class="font-semibold text-white">Executive Response</span>
-            <span class="text-neutral-600 font-mono text-[11px]">• Azure AI Foundry</span>
-          </div>
+        <!-- Input Box -->
+        <div class="relative bg-[#141416] border border-neutral-800 focus-within:border-neutral-600 rounded-2xl p-2.5 transition-colors shadow-2xl">
+          <textarea 
+            id="chat-input" 
+            rows="1" 
+            placeholder="Ask MULTI AGENT BUSINESS ASSISTANT anything..." 
+            class="w-full bg-transparent text-sm text-neutral-100 placeholder-neutral-500 px-3 py-1.5 focus:outline-none resize-none font-sans leading-relaxed"
+          ></textarea>
 
-          <div class="flex items-center space-x-3 text-[11px] font-mono text-neutral-400">
-            <div>Tokens: <span id="telemetry-tokens" class="text-neutral-200">0</span></div>
-            <div class="text-neutral-700">|</div>
-            <div>Latency: <span id="telemetry-latency" class="text-neutral-200">0ms</span></div>
-            <button id="btn-copy-report" class="ml-2 px-2 py-0.5 rounded bg-neutral-900 hover:bg-neutral-800 border border-neutral-800 text-neutral-300 transition-colors">
-              Copy
+          <div class="flex items-center justify-between pt-1 px-2 text-xs">
+            <div class="flex items-center space-x-2 text-[11px] text-neutral-500 font-mono">
+              <span class="flex items-center space-x-1">
+                <span class="w-1.5 h-1.5 rounded-full bg-emerald-500"></span>
+                <span id="bottom-status-label">Foundry Active</span>
+              </span>
+            </div>
+
+            <!-- Send Button -->
+            <button 
+              id="btn-send" 
+              disabled 
+              class="w-8 h-8 rounded-full bg-white hover:bg-neutral-200 text-black flex items-center justify-center transition-opacity opacity-30 cursor-not-allowed disabled:cursor-not-allowed shrink-0"
+              title="Send prompt"
+            >
+              <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M5 10l7-7m0 0l7 7m-7-7v18"></path>
+              </svg>
             </button>
           </div>
         </div>
 
-        <!-- Scrollable Output Pane -->
-        <div class="flex-1 overflow-y-auto p-5 relative">
-          
-          <!-- Idle Placeholder -->
-          <div id="report-placeholder" class="flex flex-col items-center justify-center h-full text-center text-neutral-600 text-xs py-16">
-            <p>Responses generated by Azure AI Foundry <code class="text-neutral-400">business-orchestrator:7</code> will appear here.</p>
-          </div>
-
-          <!-- Active Response Container -->
-          <div id="report-container" class="hidden space-y-6">
-            
-            <!-- Exact Text Output from Azure Foundry -->
-            <div>
-              <div id="rep-exec-summary" class="response-prose text-neutral-200 leading-relaxed whitespace-pre-wrap"></div>
-            </div>
-
-            <!-- Citations & Tool Calls Section -->
-            <div id="citations-wrapper" class="pt-4 border-t border-neutral-900">
-              <div class="text-[11px] font-mono uppercase text-neutral-500 mb-2 font-semibold tracking-wider">
-                Grounded Sources & Executed Tools
-              </div>
-              <div id="rep-citations-container" class="space-y-2"></div>
-            </div>
-
-          </div>
-
+        <div class="text-[11px] text-neutral-600 text-center mt-2 font-sans select-none">
+          MULTI AGENT BUSINESS ASSISTANT can make mistakes. Verify important business & financial data.
         </div>
 
       </div>
-
     </div>
 
-  </main>
-
-  <!-- ==================== MINIMAL FOOTER ==================== -->
-  <footer class="border-t border-neutral-900 py-4 text-xs font-mono text-neutral-600">
-    <div class="max-w-6xl mx-auto px-4 sm:px-6 flex items-center justify-between">
-      <div>Azure AI Foundry • gpt-4.1-mini • A2A</div>
-      <div>Same-Origin API • Fast, Minimal, Direct</div>
-    </div>
-  </footer>
+  </div>
 
   <!-- Scripts -->
   <script src="/js/query-console.js"></script>
