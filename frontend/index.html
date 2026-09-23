@@ -1,658 +1,186 @@
 <!DOCTYPE html>
-<html lang="en" class="scroll-smooth">
+<html lang="en">
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Azure AI Foundry Multi-Agent Business Assistant</title>
+  <title>Azure AI Foundry • Multi-Agent Assistant</title>
   
   <!-- Tailwind CSS via CDN -->
   <script src="https://cdn.tailwindcss.com"></script>
-  <script>
-    tailwind.config = {
-      theme: {
-        extend: {
-          colors: {
-            azure: {
-              50: '#F0F9FF',
-              100: '#E0F2FE',
-              400: '#38BDF8',
-              500: '#0EA5E9',
-              600: '#0078D4',
-              700: '#0369A1',
-              800: '#075985',
-              900: '#0C4A6E',
-              950: '#080E1A',
-            },
-          },
-        },
-      },
-    };
-  </script>
-
-  <!-- Lucide Icons -->
-  <script src="https://unpkg.com/lucide@latest"></script>
-
-  <!-- Custom Styles -->
+  
+  <!-- Custom Minimal Pure Black Styles -->
   <link rel="stylesheet" href="/css/styles.css">
 </head>
-<body class="bg-[#080E1A] text-slate-100 min-h-screen selection:bg-sky-500/30 selection:text-sky-200">
+<body class="bg-black text-neutral-200 min-h-screen flex flex-col font-sans selection:bg-neutral-800 selection:text-white">
 
-  <!-- ==================== HEADER ==================== -->
-  <header class="sticky top-0 z-50 backdrop-blur-xl bg-[#080E1A]/85 border-b border-slate-800/80">
-    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between">
-      <!-- Brand Logo -->
+  <!-- ==================== MINIMAL HEADER ==================== -->
+  <header class="border-b border-neutral-900 bg-black/90 sticky top-0 z-40 backdrop-blur-md">
+    <div class="max-w-6xl mx-auto px-4 sm:px-6 h-14 flex items-center justify-between">
+      <!-- Title & Branding -->
       <div class="flex items-center space-x-3">
-        <div class="w-9 h-9 rounded-lg bg-gradient-to-tr from-sky-600 to-blue-500 flex items-center justify-center shadow-lg shadow-sky-600/30">
-          <svg class="w-5 h-5 text-white" viewBox="0 0 24 24" fill="currentColor">
-            <path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5"/>
-          </svg>
+        <div class="w-6 h-6 rounded bg-neutral-900 border border-neutral-800 flex items-center justify-center text-xs font-mono text-white">
+          ⚡
         </div>
-        <div>
-          <div class="flex items-center space-x-2">
-            <span class="font-bold text-base tracking-tight text-white">Azure AI Foundry</span>
-            <span class="text-xs px-2 py-0.5 rounded bg-sky-950 border border-sky-600 text-sky-300 font-mono">GPT-4.1-mini</span>
-          </div>
-          <p class="text-[11px] text-slate-400 font-medium">Multi-Agent Business Assistant</p>
+        <div class="flex items-center space-x-2">
+          <span class="font-semibold text-sm text-white tracking-tight">Multi-Agent Business Assistant</span>
+          <span class="text-[11px] text-neutral-500 font-mono hidden sm:inline">• Azure AI Foundry</span>
         </div>
       </div>
 
-      <!-- Navigation Links -->
-      <nav class="hidden md:flex items-center space-x-6 text-sm font-medium text-slate-300">
-        <a href="#studio" class="hover:text-sky-400 transition-colors">Assistant Studio</a>
-        <a href="#visualizer" class="hover:text-sky-400 transition-colors">A2A Mesh</a>
-        <a href="#architecture" class="hover:text-sky-400 transition-colors">Azure Architecture</a>
-        <a href="#agents" class="hover:text-sky-400 transition-colors">Agent Roster</a>
-        <a href="#business-model" class="hover:text-sky-400 transition-colors">ROI & Economics</a>
-        <a href="#api" class="hover:text-sky-400 transition-colors">API</a>
-      </nav>
-
-      <!-- System Status & Action -->
-      <div class="flex items-center space-x-3">
-        <div id="azure-status-pill" class="hidden sm:flex items-center space-x-2 px-2.5 py-1 rounded-full bg-emerald-950/60 border border-emerald-600 text-emerald-300 text-xs font-mono">
-          <span class="w-2 h-2 rounded-full bg-emerald-400 animate-pulse"></span>
-          <span id="azure-status-text">A2A Protocol Ready</span>
-        </div>
-        <a href="#studio" class="px-3.5 py-1.5 rounded-lg text-xs font-semibold bg-sky-500 hover:bg-sky-400 text-slate-950 shadow-md shadow-sky-500/20 transition-all flex items-center space-x-1.5">
-          <span>Launch Demo</span>
-          <span>⚡</span>
-        </a>
+      <!-- Live Orchestrator Status -->
+      <div id="azure-status-pill" class="flex items-center space-x-2 px-2.5 py-1 rounded-full bg-neutral-950 border border-neutral-800 text-xs font-mono text-neutral-400">
+        <span class="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse"></span>
+        <span id="azure-status-text">Connecting to Foundry...</span>
       </div>
     </div>
   </header>
 
-  <!-- ==================== HERO SECTION ==================== -->
-  <section class="relative pt-12 pb-16 overflow-hidden">
-    <!-- Ambient glowing backgrounds -->
-    <div class="absolute top-1/4 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[700px] h-[350px] bg-sky-600/15 blur-[120px] rounded-full pointer-events-none"></div>
-    <div class="absolute top-1/3 left-1/4 w-[400px] h-[300px] bg-purple-600/10 blur-[100px] rounded-full pointer-events-none"></div>
+  <!-- ==================== MAIN CONTENT ==================== -->
+  <main class="flex-1 max-w-6xl w-full mx-auto px-4 sm:px-6 py-8 flex flex-col space-y-6">
 
-    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10 text-center">
-      <div class="inline-flex items-center space-x-2 px-3 py-1 rounded-full bg-slate-900/80 border border-slate-700 text-xs text-slate-300 mb-6 backdrop-blur-md">
-        <span class="w-2 h-2 rounded-full bg-sky-400"></span>
-        <span>Microsoft Azure AI Foundry • Autonomous Multi-Agent System</span>
+    <!-- Agent Pipeline Strip -->
+    <div class="p-3 rounded-lg border border-neutral-900 bg-neutral-950 flex flex-wrap items-center justify-between gap-2 text-xs font-mono text-neutral-400">
+      <div class="flex items-center space-x-2">
+        <span class="text-neutral-500 text-[10px] uppercase tracking-wider font-semibold">Active Pipeline:</span>
       </div>
-
-      <h1 class="text-4xl sm:text-5xl lg:text-6xl font-extrabold tracking-tight text-white mb-6 max-w-4xl mx-auto leading-tight">
-        Enterprise Intelligence Powered by <span class="bg-gradient-to-r from-sky-400 via-blue-400 to-purple-400 bg-clip-text text-transparent">Multi-Agent A2A</span> Collaboration
-      </h1>
-
-      <p class="text-base sm:text-lg text-slate-300 max-w-2xl mx-auto mb-8 font-normal leading-relaxed">
-        An autonomous business assistant built on <strong>Microsoft Azure AI Foundry</strong> with <strong>GPT-4.1-mini</strong>. 
-        Coordinated by a central Orchestrator across Research, Analyst, and Strategy agents with real-time <strong>Web Search</strong> and <strong>Document Grounding</strong>.
-      </p>
-
-      <!-- Key Agent Badges -->
-      <div class="flex flex-wrap items-center justify-center gap-3 mb-10 max-w-3xl mx-auto">
-        <div class="flex items-center space-x-2 px-3 py-1.5 rounded-lg bg-blue-950/40 border border-blue-600 text-xs text-blue-200">
-          <span class="w-2 h-2 rounded-full bg-blue-400"></span>
-          <strong>Orchestrator Agent</strong>
-          <span class="text-slate-400 text-[11px]">— Coordination & Synthesis</span>
-        </div>
-        <div class="flex items-center space-x-2 px-3 py-1.5 rounded-lg bg-sky-950/40 border border-sky-500 text-xs text-sky-200">
-          <span class="w-2 h-2 rounded-full bg-sky-400"></span>
-          <strong>🔎 Research Agent</strong>
-          <span class="text-slate-400 text-[11px]">— Web Search Intel</span>
-        </div>
-        <div class="flex items-center space-x-2 px-3 py-1.5 rounded-lg bg-emerald-950/40 border border-emerald-500 text-xs text-emerald-200">
-          <span class="w-2 h-2 rounded-full bg-emerald-400"></span>
-          <strong>📊 Analyst Agent</strong>
-          <span class="text-slate-400 text-[11px]">— Document Grounding</span>
-        </div>
-        <div class="flex items-center space-x-2 px-3 py-1.5 rounded-lg bg-purple-950/40 border border-purple-500 text-xs text-purple-200">
-          <span class="w-2 h-2 rounded-full bg-purple-400"></span>
-          <strong>🎯 Strategy Agent</strong>
-          <span class="text-slate-400 text-[11px]">— Actionable Roadmaps</span>
-        </div>
-      </div>
-
-      <!-- Quick KPI Stats Grid -->
-      <div class="grid grid-cols-2 md:grid-cols-4 gap-4 max-w-4xl mx-auto">
-        <div class="glass-panel p-4 rounded-xl text-left border border-slate-800">
-          <div class="text-xs text-slate-400 font-medium mb-1">Cost Per Workflow</div>
-          <div class="text-2xl font-bold font-mono text-emerald-400">$0.0042</div>
-          <div class="text-[11px] text-slate-500 mt-1">vs $48.50 human cost (-99.2%)</div>
-        </div>
-        <div class="glass-panel p-4 rounded-xl text-left border border-slate-800">
-          <div class="text-xs text-slate-400 font-medium mb-1">Execution Velocity</div>
-          <div class="text-2xl font-bold font-mono text-sky-400">32x Faster</div>
-          <div class="text-[11px] text-slate-500 mt-1">Sub-second A2A message routing</div>
-        </div>
-        <div class="glass-panel p-4 rounded-xl text-left border border-slate-800">
-          <div class="text-xs text-slate-400 font-medium mb-1">Gross Margin Profile</div>
-          <div class="text-2xl font-bold font-mono text-purple-400">82.4%</div>
-          <div class="text-[11px] text-slate-500 mt-1">SaaS unit economics benchmark</div>
-        </div>
-        <div class="glass-panel p-4 rounded-xl text-left border border-slate-800">
-          <div class="text-xs text-slate-400 font-medium mb-1">Grounding Accuracy</div>
-          <div class="text-2xl font-bold font-mono text-blue-400">Zero Hallucination</div>
-          <div class="text-[11px] text-slate-500 mt-1">Hybrid Bing + Vector Grounding</div>
-        </div>
+      <div class="flex flex-wrap items-center gap-2">
+        <span class="px-2 py-0.5 rounded bg-neutral-900 border border-neutral-800 text-neutral-200">business-orchestrator:7</span>
+        <span class="text-neutral-600">→</span>
+        <span class="px-2 py-0.5 rounded bg-neutral-900/60 border border-neutral-800/80 text-sky-400">🔎 Research (Web)</span>
+        <span class="text-neutral-600">→</span>
+        <span class="px-2 py-0.5 rounded bg-neutral-900/60 border border-neutral-800/80 text-emerald-400">📊 Analyst (Grounding)</span>
+        <span class="text-neutral-600">→</span>
+        <span class="px-2 py-0.5 rounded bg-neutral-900/60 border border-neutral-800/80 text-purple-400">🎯 Strategy</span>
       </div>
     </div>
-  </section>
 
-  <!-- ==================== SECTION 1: ASSISTANT STUDIO ==================== -->
-  <section id="studio" class="py-12 border-t border-slate-800/80 bg-slate-950/40">
-    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+    <!-- Query Studio Card -->
+    <div class="minimal-panel p-5 space-y-4">
       
-      <div class="mb-6 flex flex-col md:flex-row md:items-end md:justify-between gap-4">
-        <div>
-          <div class="inline-flex items-center space-x-2 text-xs font-semibold text-sky-400 uppercase tracking-wider mb-2">
-            <span>Live Interactive Console</span>
-          </div>
-          <h2 class="text-2xl sm:text-3xl font-bold text-white tracking-tight">Multi-Agent Assistant Studio</h2>
-          <p class="text-sm text-slate-400 mt-1">Execute business inquiries across the 4 Azure agents with live A2A message streaming.</p>
-        </div>
-
-        <!-- Telemetry Indicators -->
-        <div class="flex items-center space-x-4 text-xs font-mono bg-slate-900/80 border border-slate-800 px-4 py-2 rounded-lg">
-          <div><span class="text-slate-500">Tokens:</span> <span id="telemetry-tokens" class="text-sky-300 font-bold">0</span></div>
-          <div class="text-slate-700">|</div>
-          <div><span class="text-slate-500">Latency:</span> <span id="telemetry-latency" class="text-emerald-300 font-bold">0ms</span></div>
-          <div class="text-slate-700">|</div>
-          <div><span class="text-slate-500">Est. Cost:</span> <span id="telemetry-cost" class="text-purple-300 font-bold">$0.00000</span></div>
-        </div>
+      <!-- Preset Chips -->
+      <div class="flex items-center space-x-2 overflow-x-auto pb-1 text-xs">
+        <span class="text-neutral-500 font-mono text-[11px] whitespace-nowrap">Presets:</span>
+        <button data-preset="preset1" class="px-2.5 py-1 rounded bg-neutral-900 hover:bg-neutral-800 border border-neutral-800 text-neutral-300 hover:text-white transition-colors whitespace-nowrap">
+          Cloud AI Moats: Azure vs AWS
+        </button>
+        <button data-preset="preset2" class="px-2.5 py-1 rounded bg-neutral-900 hover:bg-neutral-800 border border-neutral-800 text-neutral-300 hover:text-white transition-colors whitespace-nowrap">
+          FinTech Expansion & Economics
+        </button>
+        <button data-preset="preset3" class="px-2.5 py-1 rounded bg-neutral-900 hover:bg-neutral-800 border border-neutral-800 text-neutral-300 hover:text-white transition-colors whitespace-nowrap">
+          Enterprise Multi-Agent Due Diligence
+        </button>
       </div>
 
-      <!-- Studio Input Card -->
-      <div class="glass-panel p-6 rounded-2xl border border-slate-800 shadow-2xl mb-8">
-        
-        <!-- Preset Scenario Buttons -->
-        <div class="flex items-center space-x-2 mb-3 overflow-x-auto pb-1 text-xs">
-          <span class="text-slate-500 font-medium whitespace-nowrap">Load Preset Scenario:</span>
-          <button data-preset="preset1" class="px-2.5 py-1 rounded-md bg-slate-900 border border-slate-700 hover:border-sky-500 text-slate-300 hover:text-white transition-all whitespace-nowrap">
-            ☁️ Cloud AI Moats: Azure vs AWS
-          </button>
-          <button data-preset="preset2" class="px-2.5 py-1 rounded-md bg-slate-900 border border-slate-700 hover:border-sky-500 text-slate-300 hover:text-white transition-all whitespace-nowrap">
-            💳 FinTech Expansion & Unit Economics
-          </button>
-          <button data-preset="preset3" class="px-2.5 py-1 rounded-md bg-slate-900 border border-slate-700 hover:border-sky-500 text-slate-300 hover:text-white transition-all whitespace-nowrap">
-            🏢 Enterprise Autonomous Swarm ROI
-          </button>
-        </div>
-
-        <!-- Textarea input -->
-        <div class="relative mb-4">
-          <textarea 
-            id="business-query-input" 
-            rows="3" 
-            class="w-full bg-[#050B14] border border-slate-700 rounded-xl px-4 py-3 text-sm text-slate-100 placeholder-slate-500 focus:outline-none focus:border-sky-500 focus:ring-1 focus:ring-sky-500 font-sans leading-relaxed"
-            placeholder="Type any complex strategic business inquiry (e.g., market expansion, competitive moat, unit economics, or due diligence)..."
-          >Analyze Microsoft Azure AI Foundry's enterprise moat in multi-agent orchestration compared to AWS Bedrock and GCP Vertex AI. Evaluate developer adoption, GPT-4.1-mini cost efficiency, and 90-day market capture strategy.</textarea>
-        </div>
-
-        <!-- Document Grounding & Execute Row -->
-        <div class="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4 pt-2 border-t border-slate-800/80">
-          <!-- Document selection list -->
-          <div class="flex-1">
-            <div class="flex items-center justify-between mb-2">
-              <span class="text-xs font-semibold text-slate-400 flex items-center space-x-1.5">
-                <span>📁 Document Grounding (Azure AI Search):</span>
-              </span>
-              <label class="text-[11px] text-sky-400 hover:text-sky-300 cursor-pointer font-medium">
-                + Upload Custom Grounding File
-                <input type="file" id="file-upload-input" class="hidden" multiple>
-              </label>
-            </div>
-            <div id="grounding-docs-container" class="flex flex-wrap gap-2">
-              <!-- Rendered dynamically -->
-            </div>
-          </div>
-
-          <!-- Execute Button -->
-          <div class="flex items-center space-x-3">
-            <button 
-              id="run-orchestration-btn" 
-              class="w-full lg:w-auto px-6 py-3 rounded-xl bg-gradient-to-r from-sky-500 via-blue-600 to-indigo-600 hover:from-sky-400 hover:to-indigo-500 text-white font-bold text-sm shadow-lg shadow-sky-500/25 transition-all cursor-pointer min-w-[220px]"
-            >
-              <span class="flex items-center justify-center space-x-2">
-                <span>Run Multi-Agent Workflow</span>
-                <span class="text-base">⚡</span>
-              </span>
-            </button>
-          </div>
-        </div>
-
-      </div>
-
-      <!-- Execution Grid: Left = Live A2A Stream, Right = Synthesized Business Report -->
-      <div class="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
-        
-        <!-- Live A2A Stream Console (5 Cols) -->
-        <div class="lg:col-span-5 glass-panel p-5 rounded-2xl border border-slate-800 flex flex-col h-[650px]">
-          <div class="flex items-center justify-between pb-3 mb-3 border-b border-slate-800">
-            <div class="flex items-center space-x-2">
-              <span class="w-2.5 h-2.5 rounded-full bg-emerald-400 animate-ping"></span>
-              <h3 class="font-bold text-white text-sm">Live A2A Message Stream</h3>
-            </div>
-            <span class="text-[11px] text-slate-500 font-mono">Agent-to-Agent Bus</span>
-          </div>
-
-          <!-- Scrollable stream container -->
-          <div id="a2a-stream-container" class="flex-1 overflow-y-auto space-y-2 pr-1 text-xs">
-            <div class="text-center py-20 text-slate-500">
-              <div class="text-3xl mb-2">🤖</div>
-              <p>Ready to orchestrate.</p>
-              <p class="text-[11px] mt-1">Submit a query or pick a preset to watch inter-agent handoffs.</p>
-            </div>
-          </div>
-        </div>
-
-        <!-- Synthesized Deliverable View (7 Cols) -->
-        <div class="lg:col-span-7 glass-panel rounded-2xl border border-slate-800 flex flex-col h-[650px] overflow-hidden">
-          
-          <!-- Report Header & Tabs -->
-          <div class="p-4 bg-slate-900/60 border-b border-slate-800 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
-            <div>
-              <span class="text-[10px] font-mono uppercase tracking-wider text-sky-400">Synthesized Business Deliverable</span>
-              <h3 class="font-bold text-white text-base">Executive Response</h3>
-            </div>
-
-            <!-- Action buttons -->
-            <div class="flex items-center space-x-2 text-xs">
-              <button id="btn-copy-report" class="px-2.5 py-1 rounded bg-slate-800 hover:bg-slate-700 text-slate-300 border border-slate-700">
-                📋 Copy Text
-              </button>
-            </div>
-          </div>
-
-          <!-- Tab Bar -->
-          <div class="flex border-b border-slate-800 bg-slate-950/40 text-xs overflow-x-auto">
-            <button data-report-tab="summary" class="px-4 py-2.5 font-semibold text-slate-400 hover:text-white tab-active">
-              Executive Response
-            </button>
-            <button data-report-tab="citations" class="px-4 py-2.5 font-semibold text-slate-400 hover:text-white">
-              🔗 Grounded Sources & Tool Calls
-            </button>
-          </div>
-
-          <!-- Tab Content Area -->
-          <div class="flex-1 overflow-y-auto p-5 relative">
-            
-            <!-- Placeholder before run -->
-            <div id="report-placeholder" class="flex flex-col items-center justify-center h-full text-center text-slate-500 py-12">
-              <div class="text-4xl mb-3">📄</div>
-              <div class="font-semibold text-slate-300 text-base">Awaiting Multi-Agent Synthesis</div>
-              <div class="text-xs text-slate-500 mt-1 max-w-sm">The Orchestrator will synthesize empirical research, grounded financials, and strategic roadmaps here.</div>
-            </div>
-
-            <!-- Actual Report (Hidden by default until run) -->
-            <div id="report-container" class="hidden space-y-4">
-              
-              <!-- Tab Pane: Summary -->
-              <div id="tab-pane-summary" class="report-tab-pane space-y-4">
-                <div class="p-3.5 rounded-xl bg-blue-950/20 border border-blue-800/40 text-xs">
-                  <div class="text-slate-400 text-[11px] mb-1">Target Inquiry:</div>
-                  <div id="rep-query-title" class="font-semibold text-blue-300 text-sm">...</div>
-                  <div class="text-[10px] text-slate-500 font-mono mt-1">Generated: <span id="rep-timestamp">...</span></div>
-                </div>
-
-                <div>
-                  <h4 class="text-xs font-bold uppercase tracking-wider text-slate-400 mb-2">Executive Briefing</h4>
-                  <div id="rep-exec-summary" class="text-sm text-slate-200 leading-relaxed bg-slate-900/40 p-4 rounded-xl border border-slate-800">
-                    ...
-                  </div>
-                </div>
-              </div>
-
-              <!-- Tab Pane: Citations & Tool Grounding -->
-              <div id="tab-pane-citations" class="report-tab-pane hidden space-y-3">
-                <h4 class="text-xs font-bold uppercase tracking-wider text-slate-400 mb-2">Real Grounding & Tool Execution Audit</h4>
-                <div id="rep-citations-container" class="space-y-2">
-                  <!-- Rendered dynamically -->
-                </div>
-              </div>
-
-            </div>
-          </div>
-
-        </div>
-
-      </div>
-
-    </div>
-  </section>
-
-  <!-- ==================== SECTION 2: A2A MESH CANVAS ==================== -->
-  <section id="visualizer" class="py-16 border-t border-slate-800/80">
-    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-      <div class="text-center max-w-3xl mx-auto mb-10">
-        <div class="inline-flex items-center space-x-2 text-xs font-semibold text-sky-400 uppercase tracking-wider mb-2">
-          <span>Real-Time Network Topology</span>
-        </div>
-        <h2 class="text-3xl font-extrabold text-white tracking-tight">Interactive A2A Protocol Canvas</h2>
-        <p class="text-sm text-slate-400 mt-2">
-          Visualizing direct peer-to-peer data packet flows between the Orchestrator, Research Agent, Analyst Agent, and Strategy Agent, grounded by Bing Web Search and Azure AI Search.
-        </p>
-      </div>
-
-      <!-- Canvas Card -->
-      <div class="glass-panel p-4 rounded-2xl border border-slate-800 relative shadow-2xl">
-        <canvas id="a2a-canvas" class="w-full rounded-xl bg-[#040810]" style="height: 440px;"></canvas>
-        <div class="absolute bottom-6 left-6 text-xs text-slate-400 bg-slate-900/80 px-3 py-1.5 rounded-lg border border-slate-800 backdrop-blur-md">
-          <span class="text-sky-400 font-semibold">Hover over nodes</span> to inspect status • Animated packets show live inter-agent handoffs
-        </div>
-      </div>
-    </div>
-  </section>
-
-  <!-- ==================== SECTION 3: AZURE ARCHITECTURE ==================== -->
-  <section id="architecture" class="py-16 border-t border-slate-800/80 bg-slate-950/40">
-    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-      <div class="text-center max-w-3xl mx-auto mb-12">
-        <div class="inline-flex items-center space-x-2 text-xs font-semibold text-sky-400 uppercase tracking-wider mb-2">
-          <span>Enterprise Technical Blueprint</span>
-        </div>
-        <h2 class="text-3xl font-extrabold text-white tracking-tight">Microsoft Azure AI Foundry Architecture</h2>
-        <p class="text-sm text-slate-400 mt-2">
-          Enterprise-ready reference architecture mapping the 5 foundational layers powering our multi-agent assistant.
-        </p>
-      </div>
-
-      <!-- Architecture Interactive Layout -->
-      <div class="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
-        
-        <!-- Left: Layer Selector Buttons (4 Cols) -->
-        <div class="lg:col-span-4 space-y-2">
-          <button data-arch-layer="layer1" class="w-full text-left p-3.5 rounded-xl border border-sky-400 bg-sky-950/40 text-sky-300 font-medium text-xs transition-all flex items-center justify-between">
-            <span class="font-bold">1. Intelligence & Foundation Layer</span>
-            <span class="text-[10px] px-2 py-0.5 rounded bg-sky-900/60 font-mono">GPT-4.1-mini</span>
-          </button>
-          <button data-arch-layer="layer2" class="w-full text-left p-3.5 rounded-xl border border-slate-800 bg-slate-900/40 text-slate-400 font-medium text-xs hover:border-slate-700 transition-all flex items-center justify-between">
-            <span class="font-bold">2. Multi-Agent Orchestration & A2A</span>
-            <span class="text-[10px] px-2 py-0.5 rounded bg-slate-800 font-mono">A2A Mesh</span>
-          </button>
-          <button data-arch-layer="layer3" class="w-full text-left p-3.5 rounded-xl border border-slate-800 bg-slate-900/40 text-slate-400 font-medium text-xs hover:border-slate-700 transition-all flex items-center justify-between">
-            <span class="font-bold">3. Tools & Dual Grounding Engine</span>
-            <span class="text-[10px] px-2 py-0.5 rounded bg-slate-800 font-mono">Bing + Azure AI Search</span>
-          </button>
-          <button data-arch-layer="layer4" class="w-full text-left p-3.5 rounded-xl border border-slate-800 bg-slate-900/40 text-slate-400 font-medium text-xs hover:border-slate-700 transition-all flex items-center justify-between">
-            <span class="font-bold">4. State Management & Persistence</span>
-            <span class="text-[10px] px-2 py-0.5 rounded bg-slate-800 font-mono">Cosmos DB</span>
-          </button>
-          <button data-arch-layer="layer5" class="w-full text-left p-3.5 rounded-xl border border-slate-800 bg-slate-900/40 text-slate-400 font-medium text-xs hover:border-slate-700 transition-all flex items-center justify-between">
-            <span class="font-bold">5. Governance & Observability</span>
-            <span class="text-[10px] px-2 py-0.5 rounded bg-slate-800 font-mono">Entra ID + App Insights</span>
-          </button>
-        </div>
-
-        <!-- Right: Layer Details Display (8 Cols) -->
-        <div class="lg:col-span-8 glass-panel p-6 rounded-2xl border border-slate-800">
-          <div class="flex items-center justify-between pb-3 mb-4 border-b border-slate-800">
-            <div>
-              <span id="arch-service" class="text-xs text-sky-400 font-mono">Azure AI Foundry</span>
-              <h3 id="arch-title" class="text-xl font-bold text-white">Intelligence & Foundation Layer</h3>
-            </div>
-            <span id="arch-model" class="text-xs px-2.5 py-1 rounded bg-slate-900 border border-slate-700 text-slate-300 font-mono">GPT-4.1-mini</span>
-          </div>
-
-          <p id="arch-description" class="text-sm text-slate-300 leading-relaxed mb-6">
-            Serves as the computational reasoning backbone for all four agents...
-          </p>
-
-          <h4 class="text-xs font-bold uppercase tracking-wider text-slate-400 mb-2">Technical Specifications</h4>
-          <div id="arch-specs-container" class="grid grid-cols-2 sm:grid-cols-4 gap-3 mb-6">
-            <!-- Rendered dynamically -->
-          </div>
-
-          <h4 class="text-xs font-bold uppercase tracking-wider text-slate-400 mb-2">Azure SDK Implementation Pattern</h4>
-          <div class="terminal-window rounded-xl p-4 text-xs text-slate-300 font-mono overflow-x-auto whitespace-pre-wrap leading-relaxed">
-            <code id="arch-code-snippet"># Azure AI Foundry Initialization</code>
-          </div>
-        </div>
-
-      </div>
-    </div>
-  </section>
-
-  <!-- ==================== SECTION 4: AGENT CATALOG ==================== -->
-  <section id="agents" class="py-16 border-t border-slate-800/80">
-    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-      <div class="text-center max-w-3xl mx-auto mb-12">
-        <div class="inline-flex items-center space-x-2 text-xs font-semibold text-sky-400 uppercase tracking-wider mb-2">
-          <span>Agent Specifications</span>
-        </div>
-        <h2 class="text-3xl font-extrabold text-white tracking-tight">Specialized Agent Roster</h2>
-        <p class="text-sm text-slate-400 mt-2">
-          Inspect the system prompts, model hyper-parameters, and assigned tool sets for each of our 4 autonomous agents.
-        </p>
-      </div>
-
-      <div id="agent-catalog-grid" class="grid grid-cols-1 md:grid-cols-2 gap-6">
-        <!-- Rendered dynamically by agent-catalog.js -->
-      </div>
-    </div>
-  </section>
-
-  <!-- ==================== SECTION 5: BUSINESS MODEL & ROI ==================== -->
-  <section id="business-model" class="py-16 border-t border-slate-800/80 bg-slate-950/40">
-    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-      <div class="text-center max-w-3xl mx-auto mb-12">
-        <div class="inline-flex items-center space-x-2 text-xs font-semibold text-sky-400 uppercase tracking-wider mb-2">
-          <span>Financial Feasibility & Monetization</span>
-        </div>
-        <h2 class="text-3xl font-extrabold text-white tracking-tight">Business Model & ROI Calculator</h2>
-        <p class="text-sm text-slate-400 mt-2">
-          Demonstrating unit economics, token cost savings, and enterprise return on investment on Microsoft Azure.
-        </p>
-      </div>
-
-      <!-- ROI Calculator Card -->
-      <div class="glass-panel p-6 sm:p-8 rounded-2xl border border-slate-800 mb-12">
-        <div class="grid grid-cols-1 lg:grid-cols-12 gap-8 items-center">
-          
-          <!-- Sliders (7 Cols) -->
-          <div class="lg:col-span-7 space-y-6">
-            <h3 class="font-bold text-white text-lg">Interactive Cost Savings & ROI Model</h3>
-
-            <!-- Slider 1 -->
-            <div>
-              <div class="flex justify-between text-xs font-medium mb-1.5">
-                <span class="text-slate-300">Monthly Business Inquiries / Complex Workflows:</span>
-                <span id="val-workflows" class="text-sky-400 font-mono font-bold">500</span>
-              </div>
-              <input type="range" id="slider-workflows" min="50" max="5000" step="50" value="500" class="w-full accent-sky-500 cursor-pointer">
-              <div class="flex justify-between text-[10px] text-slate-500 mt-1">
-                <span>50 workflows</span>
-                <span>5,000 workflows</span>
-              </div>
-            </div>
-
-            <!-- Slider 2 -->
-            <div>
-              <div class="flex justify-between text-xs font-medium mb-1.5">
-                <span class="text-slate-300">Traditional Human Analyst Hours per Workflow:</span>
-                <span id="val-hours" class="text-emerald-400 font-mono font-bold">12 hrs</span>
-              </div>
-              <input type="range" id="slider-hours" min="2" max="40" step="1" value="12" class="w-full accent-emerald-500 cursor-pointer">
-              <div class="flex justify-between text-[10px] text-slate-500 mt-1">
-                <span>2 hrs (Quick Check)</span>
-                <span>40 hrs (Full Study)</span>
-              </div>
-            </div>
-
-            <!-- Slider 3 -->
-            <div>
-              <div class="flex justify-between text-xs font-medium mb-1.5">
-                <span class="text-slate-300">Human Benchmark Hourly Rate:</span>
-                <span id="val-rate" class="text-purple-400 font-mono font-bold">$75/hr</span>
-              </div>
-              <input type="range" id="slider-rate" min="30" max="250" step="5" value="75" class="w-full accent-purple-500 cursor-pointer">
-              <div class="flex justify-between text-[10px] text-slate-500 mt-1">
-                <span>$30/hr</span>
-                <span>$250/hr</span>
-              </div>
-            </div>
-          </div>
-
-          <!-- Dynamic Output Metrics (5 Cols) -->
-          <div class="lg:col-span-5 bg-slate-900/90 p-6 rounded-xl border border-slate-800 space-y-4">
-            <div>
-              <span class="text-xs text-slate-400 uppercase font-semibold tracking-wider">Projected Annual Cost Savings</span>
-              <div id="roi-annual-savings" class="text-3xl sm:text-4xl font-extrabold text-emerald-400 font-mono">$538,325</div>
-              <span class="text-xs text-slate-500">Net direct savings reclaimed</span>
-            </div>
-
-            <div class="grid grid-cols-2 gap-3 pt-3 border-t border-slate-800">
-              <div>
-                <span class="text-[11px] text-slate-400">Hours Reclaimed</span>
-                <div id="roi-hours-saved" class="text-lg font-bold text-sky-300 font-mono">72,000 hrs</div>
-              </div>
-              <div>
-                <span class="text-[11px] text-slate-400">Projected ROI %</span>
-                <div id="roi-percent" class="text-lg font-bold text-purple-300 font-mono">31,900%</div>
-              </div>
-            </div>
-
-            <div class="pt-3 border-t border-slate-800 text-xs space-y-1">
-              <div class="flex justify-between">
-                <span class="text-slate-400">Traditional Human Cost:</span>
-                <span id="roi-human-cost" class="font-mono text-slate-200 font-medium">$540,000/yr</span>
-              </div>
-              <div class="flex justify-between">
-                <span class="text-slate-400">Azure Multi-Agent Cost:</span>
-                <span id="roi-agent-cost" class="font-mono text-emerald-400 font-medium">$1,675/yr</span>
-              </div>
-            </div>
-          </div>
-
-        </div>
-      </div>
-
-      <!-- Pricing & Packaging Tiers -->
-      <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
-        <div class="glass-panel p-6 rounded-xl border border-slate-800 flex flex-col justify-between">
-          <div>
-            <h4 class="font-bold text-white text-base">Starter Swarm</h4>
-            <div class="text-2xl font-bold font-mono text-sky-400 mt-2">$499 <span class="text-xs text-slate-400 font-normal">/ month</span></div>
-            <p class="text-xs text-slate-400 mt-2 mb-4">Ideal for early-stage startups and small advisory firms automating market research and due diligence.</p>
-            <ul class="text-xs text-slate-300 space-y-2 mb-6">
-              <li>✓ All 4 Core Agents (Orchestrator, Research, Analyst, Strategy)</li>
-              <li>✓ 1,000 A2A Workflows / mo</li>
-              <li>✓ Bing Web Search Grounding</li>
-              <li>✓ Up to 10 Grounding Documents (50MB)</li>
-            </ul>
-          </div>
-          <button class="w-full py-2 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-200 text-xs font-semibold">Select Starter</button>
-        </div>
-
-        <div class="glass-panel p-6 rounded-xl border-2 border-sky-500 bg-sky-950/20 flex flex-col justify-between relative shadow-lg shadow-sky-500/10">
-          <div class="absolute -top-3 right-4 px-2 py-0.5 rounded bg-sky-500 text-slate-950 font-bold text-[10px] uppercase">Recommended</div>
-          <div>
-            <h4 class="font-bold text-white text-base">Enterprise Mesh</h4>
-            <div class="text-2xl font-bold font-mono text-sky-300 mt-2">$2,499 <span class="text-xs text-slate-400 font-normal">/ month</span></div>
-            <p class="text-xs text-slate-400 mt-2 mb-4">Full multi-agent suite with dedicated Azure AI Search index and unlimited team collaboration.</p>
-            <ul class="text-xs text-slate-300 space-y-2 mb-6">
-              <li>✓ Everything in Starter</li>
-              <li>✓ 10,000 A2A Workflows / mo</li>
-              <li>✓ Dedicated Azure AI Search Vector Vault</li>
-              <li>✓ Microsoft Entra ID Zero Trust RBAC</li>
-              <li>✓ 99.9% Azure SLA Guarantee</li>
-            </ul>
-          </div>
-          <button class="w-full py-2 rounded-lg bg-sky-500 hover:bg-sky-400 text-slate-950 text-xs font-bold">Deploy Enterprise</button>
-        </div>
-
-        <div class="glass-panel p-6 rounded-xl border border-slate-800 flex flex-col justify-between">
-          <div>
-            <h4 class="font-bold text-white text-base">Sovereign Cloud Tenant</h4>
-            <div class="text-2xl font-bold font-mono text-purple-400 mt-2">Custom <span class="text-xs text-slate-400 font-normal">Azure VNet</span></div>
-            <p class="text-xs text-slate-400 mt-2 mb-4">Dedicated Azure AI Foundry deployment running in your company's sovereign Microsoft Azure subscription.</p>
-            <ul class="text-xs text-slate-300 space-y-2 mb-6">
-              <li>✓ Deployed inside your Azure VNet</li>
-              <li>✓ Customer-Managed Key Encryption (Azure Key Vault)</li>
-              <li>✓ HIPAA / SOC2 Type II / EU AI Act Audit Logs</li>
-              <li>✓ Custom Agent Specialization & Fine-Tuning</li>
-            </ul>
-          </div>
-          <button class="w-full py-2 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-200 text-xs font-semibold">Contact Solutions Architect</button>
-        </div>
-      </div>
-
-    </div>
-  </section>
-
-  <!-- ==================== SECTION 6: API DOCS ==================== -->
-  <section id="api" class="py-16 border-t border-slate-800/80">
-    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-      <div class="text-center max-w-3xl mx-auto mb-10">
-        <div class="inline-flex items-center space-x-2 text-xs font-semibold text-sky-400 uppercase tracking-wider mb-2">
-          <span>FastAPI Endpoints</span>
-        </div>
-        <h2 class="text-3xl font-extrabold text-white tracking-tight">Programmatic Multi-Agent API</h2>
-        <p class="text-sm text-slate-400 mt-2">
-          Integrate the Azure Multi-Agent Business Assistant into your enterprise pipelines, Slack, or Teams.
-        </p>
-      </div>
-
-      <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-        <!-- Endpoint 1 -->
-        <div class="glass-panel p-4 rounded-xl border border-slate-800 text-xs">
-          <div class="flex items-center space-x-2 mb-2 font-mono">
-            <span class="px-2 py-0.5 rounded bg-emerald-950 text-emerald-300 font-bold border border-emerald-700">POST</span>
-            <span class="text-sky-300 font-semibold">/api/query</span>
-          </div>
-          <p class="text-slate-400 mb-2">Executes full multi-agent orchestration (Orchestrator -> Research -> Analyst -> Strategy) and returns synthesized report.</p>
-          <pre class="p-2.5 rounded bg-slate-950 text-slate-300 font-mono text-[11px] overflow-x-auto whitespace-pre-wrap">curl -X POST http://localhost:8000/api/query \
-  -H "Content-Type: application/json" \
-  -d '{"query": "Analyze SaaS gross margin benchmarks", "document_ids": ["doc-01"]}'</pre>
-        </div>
-
-        <!-- Endpoint 2 -->
-        <div class="glass-panel p-4 rounded-xl border border-slate-800 text-xs">
-          <div class="flex items-center space-x-2 mb-2 font-mono">
-            <span class="px-2 py-0.5 rounded bg-blue-950 text-blue-300 font-bold border border-blue-700">GET</span>
-            <span class="text-sky-300 font-semibold">/api/agents</span>
-          </div>
-          <p class="text-slate-400 mb-2">Lists all 4 registered Azure AI Foundry agents with models, system prompts, and assigned tools.</p>
-          <pre class="p-2.5 rounded bg-slate-950 text-slate-300 font-mono text-[11px] overflow-x-auto whitespace-pre-wrap">curl http://localhost:8000/api/agents</pre>
-        </div>
-      </div>
-    </div>
-  </section>
-
-  <!-- ==================== FOOTER ==================== -->
-  <footer class="border-t border-slate-800/80 bg-slate-950 py-10 text-xs text-slate-500">
-    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex flex-col sm:flex-row items-center justify-between gap-4">
-      <div class="flex items-center space-x-3">
-        <span class="font-bold text-slate-300">Microsoft Azure AI Foundry</span>
-        <span>•</span>
-        <span>GPT-4.1-mini</span>
-        <span>•</span>
-        <span>A2A Protocol</span>
-      </div>
+      <!-- Input Textarea -->
       <div>
-        Built with FastAPI, HTML5, Tailwind CSS & Vanilla ES6+ JavaScript.
+        <textarea 
+          id="business-query-input" 
+          rows="3" 
+          class="w-full bg-black border border-neutral-800 focus:border-neutral-600 rounded-lg p-3 text-sm text-neutral-200 placeholder-neutral-600 focus:outline-none font-sans leading-relaxed resize-y transition-colors"
+          placeholder="Ask a strategic business question (e.g. competitor analysis, market sizing, due diligence)..."
+        >Analyze Microsoft Azure AI Foundry's enterprise moat in multi-agent orchestration compared to AWS Bedrock and GCP Vertex AI. Evaluate developer adoption, GPT-4.1-mini cost efficiency, and 90-day market capture strategy.</textarea>
       </div>
+
+      <!-- Action Row -->
+      <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 pt-1">
+        <div class="flex items-center space-x-4 text-xs font-mono text-neutral-500">
+          <span>Model: <span class="text-neutral-300">gpt-4.1-mini</span></span>
+          <span>•</span>
+          <span>Protocol: <span class="text-neutral-300">A2A</span></span>
+        </div>
+
+        <button 
+          id="run-orchestration-btn" 
+          class="px-5 py-2 rounded-lg bg-white hover:bg-neutral-200 text-black font-semibold text-xs transition-colors flex items-center justify-center space-x-2 cursor-pointer shadow-sm"
+        >
+          <span>Run Multi-Agent Workflow</span>
+          <span>↵</span>
+        </button>
+      </div>
+
+    </div>
+
+    <!-- Studio Results Grid (Live Activity + Actual Response) -->
+    <div class="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
+
+      <!-- Live Orchestrator Activity (4 Cols) -->
+      <div class="lg:col-span-4 minimal-panel p-4 flex flex-col h-[560px]">
+        <div class="flex items-center justify-between pb-3 mb-3 border-b border-neutral-900 text-xs">
+          <span class="font-semibold text-neutral-300 uppercase tracking-wider text-[11px]">Orchestration Steps</span>
+          <span class="text-neutral-500 font-mono text-[10px]">A2A Log</span>
+        </div>
+
+        <div id="a2a-stream-container" class="flex-1 overflow-y-auto space-y-2 pr-1 text-xs font-mono">
+          <div class="text-center py-20 text-neutral-600 text-xs">
+            Awaiting query execution...
+          </div>
+        </div>
+      </div>
+
+      <!-- Response & Citations Card (8 Cols) -->
+      <div class="lg:col-span-8 minimal-panel flex flex-col h-[560px] overflow-hidden">
+        
+        <!-- Header & Telemetry -->
+        <div class="p-3.5 bg-neutral-950 border-b border-neutral-900 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2 text-xs">
+          <div class="flex items-center space-x-3">
+            <span class="font-semibold text-white">Executive Response</span>
+            <span class="text-neutral-600 font-mono text-[11px]">• Azure AI Foundry</span>
+          </div>
+
+          <div class="flex items-center space-x-3 text-[11px] font-mono text-neutral-400">
+            <div>Tokens: <span id="telemetry-tokens" class="text-neutral-200">0</span></div>
+            <div class="text-neutral-700">|</div>
+            <div>Latency: <span id="telemetry-latency" class="text-neutral-200">0ms</span></div>
+            <button id="btn-copy-report" class="ml-2 px-2 py-0.5 rounded bg-neutral-900 hover:bg-neutral-800 border border-neutral-800 text-neutral-300 transition-colors">
+              Copy
+            </button>
+          </div>
+        </div>
+
+        <!-- Scrollable Output Pane -->
+        <div class="flex-1 overflow-y-auto p-5 relative">
+          
+          <!-- Idle Placeholder -->
+          <div id="report-placeholder" class="flex flex-col items-center justify-center h-full text-center text-neutral-600 text-xs py-16">
+            <p>Responses generated by Azure AI Foundry <code class="text-neutral-400">business-orchestrator:7</code> will appear here.</p>
+          </div>
+
+          <!-- Active Response Container -->
+          <div id="report-container" class="hidden space-y-6">
+            
+            <!-- Exact Text Output from Azure Foundry -->
+            <div>
+              <div id="rep-exec-summary" class="response-prose text-neutral-200 leading-relaxed whitespace-pre-wrap"></div>
+            </div>
+
+            <!-- Citations & Tool Calls Section -->
+            <div id="citations-wrapper" class="pt-4 border-t border-neutral-900">
+              <div class="text-[11px] font-mono uppercase text-neutral-500 mb-2 font-semibold tracking-wider">
+                Grounded Sources & Executed Tools
+              </div>
+              <div id="rep-citations-container" class="space-y-2"></div>
+            </div>
+
+          </div>
+
+        </div>
+
+      </div>
+
+    </div>
+
+  </main>
+
+  <!-- ==================== MINIMAL FOOTER ==================== -->
+  <footer class="border-t border-neutral-900 py-4 text-xs font-mono text-neutral-600">
+    <div class="max-w-6xl mx-auto px-4 sm:px-6 flex items-center justify-between">
+      <div>Azure AI Foundry • gpt-4.1-mini • A2A</div>
+      <div>Same-Origin API • Fast, Minimal, Direct</div>
     </div>
   </footer>
 
   <!-- Scripts -->
-  <script src="/js/a2a-visualizer.js"></script>
   <script src="/js/query-console.js"></script>
-  <script src="/js/document-grounding-ui.js"></script>
-  <script src="/js/architecture-explorer.js"></script>
-  <script src="/js/agent-catalog.js"></script>
   <script src="/js/app.js"></script>
 </body>
 </html>
