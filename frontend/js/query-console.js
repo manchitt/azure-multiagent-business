@@ -122,30 +122,51 @@ class ChatApp {
     const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
     if (!SpeechRecognition) {
       if (this.btnVoice) {
-        this.btnVoice.title = "Voice recognition is not supported in this browser.";
+        this.btnVoice.title = "Voice recognition is not supported in this browser (use Chrome, Edge, or Safari).";
         this.btnVoice.classList.add("opacity-40");
       }
       return;
     }
 
     this.recognition = new SpeechRecognition();
-    this.recognition.continuous = false;
+    this.recognition.continuous = true;
     this.recognition.interimResults = true;
     this.recognition.lang = "en-US";
+    this.initialInputText = "";
 
     this.recognition.onstart = () => {
       this.isListening = true;
       if (this.btnVoice) this.btnVoice.classList.add('mic-active');
-      if (this.voiceBanner) this.voiceBanner.classList.remove('hidden');
+      if (this.voiceBanner) {
+        this.voiceBanner.classList.remove('hidden');
+        this.voiceBanner.innerHTML = `
+          <span class="flex items-center space-x-2">
+            <span class="w-2 h-2 rounded-full bg-red-500 animate-pulse"></span>
+            <span>Listening... Speak your business inquiry.</span>
+          </span>
+          <button id="btn-cancel-voice" class="text-neutral-500 hover:text-neutral-300 text-[11px]">Done</button>
+        `;
+        const cancelBtn = this.voiceBanner.querySelector('#btn-cancel-voice');
+        if (cancelBtn) cancelBtn.addEventListener('click', () => this.stopVoiceListening());
+      }
     };
 
     this.recognition.onresult = (event) => {
       let finalTranscript = '';
-      for (let i = event.resultIndex; i < event.results.length; ++i) {
-        finalTranscript += event.results[i][0].transcript;
+      let interimTranscript = '';
+
+      for (let i = 0; i < event.results.length; ++i) {
+        if (event.results[i].isFinal) {
+          finalTranscript += event.results[i][0].transcript + ' ';
+        } else {
+          interimTranscript += event.results[i][0].transcript;
+        }
       }
-      if (this.chatInput && finalTranscript) {
-        this.chatInput.value = finalTranscript;
+
+      const spoken = (finalTranscript + interimTranscript).trim();
+      if (this.chatInput && spoken) {
+        const combined = this.initialInputText ? `${this.initialInputText} ${spoken}` : spoken;
+        this.chatInput.value = combined;
         this.autoResizeInput();
         this.updateSendButtonState();
       }
@@ -153,6 +174,17 @@ class ChatApp {
 
     this.recognition.onerror = (event) => {
       console.warn("Voice search error:", event.error);
+      if (event.error === 'not-allowed') {
+        if (this.voiceBanner) {
+          this.voiceBanner.classList.remove('hidden');
+          this.voiceBanner.innerHTML = `
+            <span class="text-red-400">Microphone permission blocked. Click the lock/tune icon in your address bar to allow.</span>
+            <button id="btn-dismiss-mic" class="text-neutral-500 hover:text-neutral-300 text-[11px] ml-2">Dismiss</button>
+          `;
+          const dBtn = this.voiceBanner.querySelector('#btn-dismiss-mic');
+          if (dBtn) dBtn.addEventListener('click', () => this.voiceBanner.classList.add('hidden'));
+        }
+      }
       this.stopVoiceListening();
     };
 
@@ -160,7 +192,7 @@ class ChatApp {
       this.stopVoiceListening();
     };
 
-    // Voice button click handler
+    // Voice button click handler (toggle)
     if (this.btnVoice) {
       this.btnVoice.addEventListener('click', () => {
         if (this.isListening) {
@@ -171,7 +203,6 @@ class ChatApp {
       });
     }
 
-    // Cancel voice listening button
     if (this.btnCancelVoice) {
       this.btnCancelVoice.addEventListener('click', () => {
         this.stopVoiceListening();
@@ -181,6 +212,7 @@ class ChatApp {
 
   startVoiceListening() {
     if (!this.recognition) return;
+    this.initialInputText = this.chatInput ? this.chatInput.value.trim() : '';
     try {
       this.recognition.start();
     } catch (e) {
@@ -194,6 +226,9 @@ class ChatApp {
     if (this.voiceBanner) this.voiceBanner.classList.add('hidden');
     if (this.recognition) {
       try { this.recognition.stop(); } catch {}
+    }
+    if (this.chatInput) {
+      this.chatInput.focus();
     }
   }
 
