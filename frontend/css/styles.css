@@ -1,14 +1,17 @@
-/* ChatGPT-Style Pure Black Minimalist UI */
+/* Apple-Style Minimal Pure Black UI */
 :root {
   --bg-main: #000000;
-  --bg-sidebar: #09090B;
-  --bg-card: #121214;
-  --bg-input: #141416;
+  --bg-sidebar: #08080A;
+  --bg-card: #0F0F12;
+  --bg-input: #121215;
   --border-subtle: rgba(255, 255, 255, 0.08);
-  --border-active: rgba(255, 255, 255, 0.18);
-  --text-main: #ECECEC;
-  --text-muted: #8E8E93;
-  --accent: #FFFFFF;
+  --border-hover: rgba(255, 255, 255, 0.16);
+  --border-focus: rgba(255, 255, 255, 0.28);
+  --text-primary: #F5F5F7;
+  --text-secondary: #86868B;
+  --text-muted: #515154;
+  --apple-blue: #2997FF;
+  --apple-green: #30D158;
 }
 
 * {
@@ -17,15 +20,23 @@
 
 body {
   background-color: var(--bg-main);
-  color: var(--text-main);
-  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
-  letter-spacing: -0.012em;
+  color: var(--text-primary);
+  font-family: -apple-system, BlinkMacSystemFont, "SF Pro Text", "SF Pro Display", -ui-sans-serif, system-ui, sans-serif;
+  letter-spacing: -0.016em;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
+  font-feature-settings: "cv02", "cv03", "cv04", "cv11";
   overflow: hidden;
 }
 
-/* Custom Scrollbar */
+/* Apple Header Blur */
+.apple-header-blur {
+  background-color: rgba(0, 0, 0, 0.75);
+  backdrop-filter: saturate(180%) blur(20px);
+  -webkit-backdrop-filter: saturate(180%) blur(20px);
+}
+
+/* Custom Minimal Scrollbar */
 ::-webkit-scrollbar {
   width: 5px;
   height: 5px;
@@ -34,39 +45,41 @@ body {
   background: transparent;
 }
 ::-webkit-scrollbar-thumb {
-  background: #27272A;
+  background: #242428;
   border-radius: 4px;
 }
 ::-webkit-scrollbar-thumb:hover {
-  background: #3F3F46;
+  background: #38383E;
 }
 
-/* Auto-resizing input textarea */
+/* Textarea auto-sizing */
 #chat-input {
   min-height: 24px;
   max-height: 200px;
-  line-height: 1.5;
+  line-height: 1.55;
+  letter-spacing: -0.012em;
 }
 
-/* User & Assistant Bubble Styling */
+/* Message fade-in animation */
 .message-row {
-  animation: fadeIn 0.15s ease-out forwards;
+  animation: appleFadeIn 0.2s cubic-bezier(0.16, 1, 0.3, 1) forwards;
 }
 
-@keyframes fadeIn {
-  from { opacity: 0; transform: translateY(4px); }
+@keyframes appleFadeIn {
+  from { opacity: 0; transform: translateY(6px); }
   to { opacity: 1; transform: translateY(0); }
 }
 
-/* Markdown prose rendering in pure black */
+/* Apple-style typography in assistant responses */
 .prose-chat {
-  color: #D4D4D8;
+  color: #D2D2D7;
   font-size: 0.9375rem;
-  line-height: 1.7;
+  line-height: 1.72;
+  letter-spacing: -0.012em;
 }
 
 .prose-chat p {
-  margin-bottom: 0.85rem;
+  margin-bottom: 0.9rem;
 }
 .prose-chat p:last-child {
   margin-bottom: 0;
@@ -75,36 +88,38 @@ body {
 .prose-chat strong {
   color: #FFFFFF;
   font-weight: 600;
+  letter-spacing: -0.014em;
 }
 
 .prose-chat ul, .prose-chat ol {
-  margin-top: 0.4rem;
-  margin-bottom: 0.85rem;
-  padding-left: 1.25rem;
+  margin-top: 0.5rem;
+  margin-bottom: 0.9rem;
+  padding-left: 1.35rem;
 }
 
 .prose-chat li {
-  margin-bottom: 0.35rem;
+  margin-bottom: 0.4rem;
 }
 
 .prose-chat h1, .prose-chat h2, .prose-chat h3, .prose-chat h4 {
   color: #FFFFFF;
   font-weight: 600;
-  margin-top: 1rem;
-  margin-bottom: 0.5rem;
+  letter-spacing: -0.02em;
+  margin-top: 1.25rem;
+  margin-bottom: 0.55rem;
 }
 
 .prose-chat code {
-  background: #1C1C1F;
+  background: #18181B;
   border: 1px solid rgba(255, 255, 255, 0.08);
-  padding: 0.15rem 0.35rem;
+  padding: 0.15rem 0.4rem;
   border-radius: 5px;
-  font-size: 0.85em;
+  font-size: 0.86em;
   font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
-  color: #38BDF8;
+  color: #70B8FF;
 }
 
-/* Voice Search Microphone Pulse */
+/* Voice Microphone Pulse */
 @keyframes mic-pulse {
   0% {
     box-shadow: 0 0 0 0 rgba(239, 68, 68, 0.6);
@@ -120,17 +135,27 @@ body {
 .mic-active {
   background-color: #EF4444 !important;
   color: #FFFFFF !important;
-  animation: mic-pulse 1.5s infinite;
+  animation: mic-pulse 1.4s infinite;
 }
+
+/* Audio Speaking Animation (Sound Wave) */
+@keyframes soundwave {
+  0%, 100% { height: 4px; }
+  50% { height: 12px; }
+}
+
+.audio-playing .sound-bar:nth-child(1) { animation: soundwave 0.8s ease-in-out infinite 0.1s; }
+.audio-playing .sound-bar:nth-child(2) { animation: soundwave 0.8s ease-in-out infinite 0.25s; }
+.audio-playing .sound-bar:nth-child(3) { animation: soundwave 0.8s ease-in-out infinite 0.4s; }
 
 /* Active Chat Item in Sidebar */
 .chat-history-active {
-  background-color: #1F1F23 !important;
+  background-color: #19191C !important;
   color: #FFFFFF !important;
-  border-color: rgba(255, 255, 255, 0.12) !important;
+  border-color: rgba(255, 255, 255, 0.14) !important;
 }
 
-/* Accordion details */
+/* Clean Apple Detail Accordion */
 details summary::-webkit-details-marker {
   display: none;
 }

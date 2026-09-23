@@ -1,15 +1,184 @@
 /**
- * MULTI AGENT BUSINESS ASSISTANT — ChatGPT-Style Controller
+ * MULTI AGENT BUSINESS ASSISTANT — Apple Minimal Pure Black Edition
+ * 
  * Features:
- * 1. Live Voice Search (Web Speech API)
- * 2. Persistent Multi-Turn Chat History in Recents (Full Conversation Recall)
- * 3. Direct integration with same-origin POST /chat (Azure AI Foundry business-orchestrator:7)
+ * 1. Text-to-Speech (TTS) Voice Engine (Siri-like natural female voice) for spoken responses
+ * 2. Real-Time Voice Search (Speech-to-Text via Web Speech API)
+ * 3. Persistent Multi-Turn Conversation Recents in Sidebar
+ * 4. Same-origin integration with Azure AI Foundry business-orchestrator:7
  */
 
 const API = "";
 
+/* ==================== SIRI-STYLE VOICE SYNTHESIS ENGINE ==================== */
+class SiriVoiceSynthesizer {
+  constructor() {
+    this.synth = window.speechSynthesis;
+    this.voices = [];
+    this.currentUtterance = null;
+    this.activeButton = null;
+    this.activeRowId = null;
+
+    if (this.synth) {
+      this.loadVoices();
+      if (this.synth.onvoiceschanged !== undefined) {
+        this.synth.onvoiceschanged = () => this.loadVoices();
+      }
+    }
+  }
+
+  loadVoices() {
+    if (!this.synth) return;
+    this.voices = this.synth.getVoices();
+  }
+
+  getSiriLikeVoice() {
+    if (!this.voices || this.voices.length === 0) {
+      this.loadVoices();
+    }
+
+    // Ranked list of natural Siri / Apple / Neural female voices
+    const preferredVoices = [
+      'Samantha',                          // macOS / iOS primary natural Siri voice
+      'Microsoft Jenny Online (Natural)',  // Microsoft Edge natural female
+      'Microsoft Aria Online (Natural)',   // Microsoft Edge natural female
+      'Karen',                             // Apple AU female
+      'Victoria',                          // Apple UK female
+      'Moira',                             // Apple Ireland female
+      'Google US English',                 // Chrome standard female
+      'en-US-Standard-C',
+      'Zira',
+    ];
+
+    for (const name of preferredVoices) {
+      const match = this.voices.find(v => v.name.includes(name) || v.voiceURI.includes(name));
+      if (match) return match;
+    }
+
+    // Fallback: any female voice in English
+    const femaleEn = this.voices.find(v => 
+      v.lang.startsWith('en') && 
+      (v.name.toLowerCase().includes('female') || v.name.toLowerCase().includes('natural'))
+    );
+    if (femaleEn) return femaleEn;
+
+    // Fallback: standard US English
+    return this.voices.find(v => v.lang === 'en-US' || v.lang.startsWith('en')) || this.voices[0];
+  }
+
+  cleanTextForSpeech(raw) {
+    if (!raw) return '';
+    return raw
+      .replace(/```[\s\S]*?```/g, 'Code block omitted.')  // Skip code snippets
+      .replace(/`([^`]+)`/g, '$1')                        // Inline code
+      .replace(/[*_~#]/g, ' ')                            // Markdown marks
+      .replace(/\[([^\]]+)\]\([^\)]+\)/g, '$1')           // Links: keep text only
+      .replace(/https?:\/\/\S+/g, '')                     // URLs
+      .replace(/^\s*[-•]\s*/gm, '')                       // Bullets
+      .replace(/\s+/g, ' ')                               // Multiple spaces
+      .trim();
+  }
+
+  speak(text, rowId, buttonEl) {
+    if (!this.synth) {
+      alert("Text-to-Speech is not supported in this browser.");
+      return;
+    }
+
+    // Toggle: If currently speaking this exact message, stop it
+    if (this.synth.speaking && this.activeRowId === rowId) {
+      this.stop();
+      return;
+    }
+
+    // Stop any existing speech
+    this.stop();
+
+    const cleanText = this.cleanTextForSpeech(text);
+    if (!cleanText) return;
+
+    const utterance = new SpeechSynthesisUtterance(cleanText);
+    const voice = this.getSiriLikeVoice();
+    if (voice) {
+      utterance.voice = voice;
+      utterance.lang = voice.lang;
+    }
+
+    // Siri cadence: calm, natural pace and slight pitch elevation
+    utterance.rate = 1.02;
+    utterance.pitch = 1.06;
+
+    this.activeRowId = rowId;
+    this.activeButton = buttonEl;
+
+    utterance.onstart = () => {
+      this.updateButtonUI(buttonEl, true);
+    };
+
+    utterance.onend = () => {
+      this.cleanupCurrent(buttonEl);
+    };
+
+    utterance.onerror = (e) => {
+      console.warn("Speech synthesis error:", e);
+      this.cleanupCurrent(buttonEl);
+    };
+
+    this.currentUtterance = utterance;
+    this.synth.speak(utterance);
+  }
+
+  stop() {
+    if (this.synth) {
+      this.synth.cancel();
+    }
+    if (this.activeButton) {
+      this.updateButtonUI(this.activeButton, false);
+    }
+    this.activeRowId = null;
+    this.activeButton = null;
+    this.currentUtterance = null;
+  }
+
+  cleanupCurrent(buttonEl) {
+    this.updateButtonUI(buttonEl, false);
+    if (this.activeRowId) {
+      this.activeRowId = null;
+      this.activeButton = null;
+      this.currentUtterance = null;
+    }
+  }
+
+  updateButtonUI(buttonEl, isPlaying) {
+    if (!buttonEl) return;
+    if (isPlaying) {
+      buttonEl.classList.add('audio-playing', 'text-sky-400', 'border-sky-800/60');
+      buttonEl.classList.remove('text-neutral-400');
+      buttonEl.innerHTML = `
+        <span class="flex items-center space-x-1 mr-1">
+          <span class="sound-bar inline-block w-0.5 bg-sky-400 rounded-full"></span>
+          <span class="sound-bar inline-block w-0.5 bg-sky-400 rounded-full"></span>
+          <span class="sound-bar inline-block w-0.5 bg-sky-400 rounded-full"></span>
+        </span>
+        <span>Stop</span>
+      `;
+    } else {
+      buttonEl.classList.remove('audio-playing', 'text-sky-400', 'border-sky-800/60');
+      buttonEl.classList.add('text-neutral-400');
+      buttonEl.innerHTML = `
+        <svg class="w-3.5 h-3.5 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.536 8.464a5 5 0 010 7.072m2.828-9.9a9 9 0 010 12.728M5.586 15H4a1 1 0 01-1-1v-4a1 1 0 011-1h1.586l4.707-4.707C10.923 3.663 12 4.109 12 5v14c0 .891-1.077 1.337-1.707.707L5.586 15z"></path>
+        </svg>
+        <span>Listen</span>
+      `;
+    }
+  }
+}
+
+/* ==================== MAIN CHAT APP CONTROLLER ==================== */
 class ChatApp {
   constructor() {
+    this.tts = new SiriVoiceSynthesizer();
     this.conversations = this.loadConversations();
     this.activeConversationId = null;
     this.isGenerating = false;
@@ -35,7 +204,6 @@ class ChatApp {
     this.btnSend = document.getElementById('btn-send');
     this.btnVoice = document.getElementById('btn-voice-search');
     this.voiceBanner = document.getElementById('voice-status-banner');
-    this.btnCancelVoice = document.getElementById('btn-cancel-voice');
     this.emptyState = document.getElementById('empty-state');
     this.messagesContainer = document.getElementById('messages-container');
     this.scrollArea = document.getElementById('chat-scroll-area');
@@ -53,7 +221,7 @@ class ChatApp {
       this.btnSend.addEventListener('click', () => this.sendMessage());
     }
 
-    // Input auto-resizing & Enter key
+    // Auto-resizing textarea & Enter key
     if (this.chatInput) {
       this.chatInput.addEventListener('input', () => {
         this.autoResizeInput();
@@ -93,6 +261,7 @@ class ChatApp {
     if (this.btnClearAllHistory) {
       this.btnClearAllHistory.addEventListener('click', () => {
         if (confirm("Clear all saved chat history?")) {
+          this.tts.stop();
           this.conversations = [];
           this.saveConversations();
           this.startNewChat();
@@ -108,7 +277,7 @@ class ChatApp {
       });
     }
 
-    // Keyboard shortcut Cmd/Ctrl + K for New Chat
+    // Shortcut Cmd/Ctrl + K for New Chat
     document.addEventListener('keydown', (e) => {
       if ((e.metaKey || e.ctrlKey) && e.key.toLowerCase() === 'k') {
         e.preventDefault();
@@ -117,7 +286,7 @@ class ChatApp {
     });
   }
 
-  /* ==================== VOICE SEARCH FEATURE ==================== */
+  /* ==================== VOICE SEARCH (SPEECH-TO-TEXT) ==================== */
   initVoiceSearch() {
     const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
     if (!SpeechRecognition) {
@@ -144,7 +313,7 @@ class ChatApp {
             <span class="w-2 h-2 rounded-full bg-red-500 animate-pulse"></span>
             <span>Listening... Speak your business inquiry.</span>
           </span>
-          <button id="btn-cancel-voice" class="text-neutral-500 hover:text-neutral-300 text-[11px]">Done</button>
+          <button id="btn-cancel-voice" class="text-neutral-400 hover:text-white text-[11px] font-medium">Done</button>
         `;
         const cancelBtn = this.voiceBanner.querySelector('#btn-cancel-voice');
         if (cancelBtn) cancelBtn.addEventListener('click', () => this.stopVoiceListening());
@@ -178,8 +347,8 @@ class ChatApp {
         if (this.voiceBanner) {
           this.voiceBanner.classList.remove('hidden');
           this.voiceBanner.innerHTML = `
-            <span class="text-red-400">Microphone permission blocked. Click the lock/tune icon in your address bar to allow.</span>
-            <button id="btn-dismiss-mic" class="text-neutral-500 hover:text-neutral-300 text-[11px] ml-2">Dismiss</button>
+            <span class="text-red-400">Microphone blocked. Click the lock/tune icon in your address bar to allow.</span>
+            <button id="btn-dismiss-mic" class="text-neutral-400 hover:text-white text-[11px] ml-2">Dismiss</button>
           `;
           const dBtn = this.voiceBanner.querySelector('#btn-dismiss-mic');
           if (dBtn) dBtn.addEventListener('click', () => this.voiceBanner.classList.add('hidden'));
@@ -200,12 +369,6 @@ class ChatApp {
         } else {
           this.startVoiceListening();
         }
-      });
-    }
-
-    if (this.btnCancelVoice) {
-      this.btnCancelVoice.addEventListener('click', () => {
-        this.stopVoiceListening();
       });
     }
   }
@@ -253,6 +416,7 @@ class ChatApp {
   }
 
   startNewChat() {
+    this.tts.stop();
     this.stopVoiceListening();
     this.activeConversationId = null;
     this.messagesContainer.innerHTML = '';
@@ -271,11 +435,12 @@ class ChatApp {
     const prompt = this.chatInput.value.trim();
     if (!prompt || this.isGenerating) return;
 
+    this.tts.stop();
     this.stopVoiceListening();
     this.isGenerating = true;
     this.updateSendButtonState();
 
-    // Ensure we have an active conversation
+    // Ensure active conversation object exists
     if (!this.activeConversationId) {
       const newConv = {
         id: `conv_${Date.now()}`,
@@ -293,7 +458,7 @@ class ChatApp {
     this.emptyState.classList.add('hidden');
     this.messagesContainer.classList.remove('hidden');
 
-    // 1. Render User Message
+    // 1. Render User Message Bubble
     this.appendUserMessage(prompt);
     if (currentConv) {
       currentConv.messages.push({ role: 'user', content: prompt });
@@ -351,7 +516,7 @@ class ChatApp {
     const row = document.createElement('div');
     row.className = 'message-row flex justify-end';
     row.innerHTML = `
-      <div class="max-w-[85%] sm:max-w-[75%] rounded-2xl px-4 py-2.5 bg-[#1C1C1F] text-neutral-100 text-sm leading-relaxed border border-neutral-800 whitespace-pre-wrap">
+      <div class="max-w-[85%] sm:max-w-[75%] rounded-2xl px-4 py-2.5 bg-[#1C1C1F] text-[#F5F5F7] text-sm leading-relaxed border border-neutral-800/80 whitespace-pre-wrap font-sans">
         ${this.escapeHtml(text)}
       </div>
     `;
@@ -384,6 +549,7 @@ class ChatApp {
     const steps = data.agent_activity || [];
     const citations = data.citations || [];
     const toolCalls = data.tool_calls || [];
+    const responseText = data.response || 'No response returned.';
 
     // Build Thought Process Accordion
     let stepsHtml = '';
@@ -445,34 +611,74 @@ class ChatApp {
 
         <!-- Real Output from Azure AI Foundry -->
         <div class="prose-chat whitespace-pre-wrap leading-relaxed">
-          ${this.escapeHtml(data.response || 'No response returned.')}
+          ${this.escapeHtml(responseText)}
         </div>
 
         <!-- Grounded Sources -->
         ${sourcesHtml}
 
-        <!-- Action / Metadata bar -->
-        <div class="flex items-center justify-between pt-2 text-[11px] font-mono text-neutral-500">
+        <!-- Apple-Style Bottom Action Bar (Listen + Copy + Telemetry) -->
+        <div class="flex flex-wrap items-center justify-between pt-2.5 text-[11px] font-mono text-neutral-500 gap-2 border-t border-neutral-900/40">
           <div class="flex items-center space-x-3">
             <span>Tokens: ${usage.total_tokens || 0}</span>
+            <span>•</span>
             <span>Latency: ${usage.latency_ms || 0}ms</span>
-            <span>Model: ${data.model || 'gpt-4.1-mini'}</span>
           </div>
-          <button class="btn-copy px-2 py-0.5 rounded bg-neutral-900 hover:bg-neutral-800 border border-neutral-800 text-neutral-400 hover:text-white transition-colors cursor-pointer" data-copy="${encodeURIComponent(data.response || '')}">
-            Copy
-          </button>
+
+          <div class="flex items-center space-x-2">
+            <!-- TTS Listen Button -->
+            <button 
+              class="btn-listen flex items-center px-2 py-0.5 rounded bg-neutral-900 hover:bg-neutral-800 border border-neutral-800 text-neutral-400 hover:text-white transition-all cursor-pointer" 
+              title="Listen to spoken response (Siri Voice)"
+            >
+              <svg class="w-3.5 h-3.5 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.536 8.464a5 5 0 010 7.072m2.828-9.9a9 9 0 010 12.728M5.586 15H4a1 1 0 01-1-1v-4a1 1 0 011-1h1.586l4.707-4.707C10.923 3.663 12 4.109 12 5v14c0 .891-1.077 1.337-1.707.707L5.586 15z"></path>
+              </svg>
+              <span>Listen</span>
+            </button>
+
+            <!-- Copy Button -->
+            <button 
+              class="btn-copy flex items-center px-2 py-0.5 rounded bg-neutral-900 hover:bg-neutral-800 border border-neutral-800 text-neutral-400 hover:text-white transition-colors cursor-pointer" 
+              title="Copy text to clipboard"
+            >
+              <svg class="w-3.5 h-3.5 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z"></path>
+              </svg>
+              <span>Copy</span>
+            </button>
+          </div>
         </div>
       </div>
     `;
 
-    // Attach copy handler
+    // Attach Listen button listener (TTS)
+    const listenBtn = row.querySelector('.btn-listen');
+    if (listenBtn) {
+      listenBtn.addEventListener('click', () => {
+        this.tts.speak(responseText, rowId, listenBtn);
+      });
+    }
+
+    // Attach Copy button listener
     const copyBtn = row.querySelector('.btn-copy');
     if (copyBtn) {
       copyBtn.addEventListener('click', () => {
-        const text = decodeURIComponent(copyBtn.getAttribute('data-copy'));
-        navigator.clipboard.writeText(text).then(() => {
-          copyBtn.textContent = 'Copied!';
-          setTimeout(() => copyBtn.textContent = 'Copy', 1500);
+        navigator.clipboard.writeText(responseText).then(() => {
+          copyBtn.innerHTML = `
+            <svg class="w-3.5 h-3.5 mr-1 text-emerald-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path>
+            </svg>
+            <span class="text-emerald-400">Copied</span>
+          `;
+          setTimeout(() => {
+            copyBtn.innerHTML = `
+              <svg class="w-3.5 h-3.5 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z"></path>
+              </svg>
+              <span>Copy</span>
+            `;
+          }, 1800);
         });
       });
     }
@@ -511,7 +717,7 @@ class ChatApp {
       .replace(/'/g, '&#039;');
   }
 
-  /* ==================== MULTI-SESSION CHAT HISTORY ==================== */
+  /* ==================== MULTI-SESSION PERSISTENT CHAT HISTORY ==================== */
   loadConversations() {
     try {
       const stored = localStorage.getItem('maba_full_conversations');
@@ -530,6 +736,7 @@ class ChatApp {
   }
 
   loadConversationById(convId) {
+    this.tts.stop();
     const conv = this.conversations.find(c => c.id === convId);
     if (!conv) return;
 
@@ -538,7 +745,7 @@ class ChatApp {
     this.messagesContainer.classList.remove('hidden');
     this.messagesContainer.innerHTML = '';
 
-    // Replay all messages in this conversation
+    // Replay saved conversation
     conv.messages.forEach((msg, idx) => {
       if (msg.role === 'user') {
         this.appendUserMessage(msg.content);
@@ -558,6 +765,7 @@ class ChatApp {
 
   deleteConversation(convId, event) {
     if (event) event.stopPropagation();
+    this.tts.stop();
     this.conversations = this.conversations.filter(c => c.id !== convId);
     this.saveConversations();
 
@@ -582,8 +790,8 @@ class ChatApp {
     this.conversations.forEach(conv => {
       const isActive = this.activeConversationId === conv.id;
       const item = document.createElement('div');
-      item.className = `group flex items-center justify-between px-2.5 py-1.5 rounded text-xs border border-transparent transition-all cursor-pointer ${
-        isActive ? 'chat-history-active' : 'text-neutral-400 hover:text-neutral-200 hover:bg-neutral-900'
+      item.className = `group flex items-center justify-between px-2.5 py-1.5 rounded-lg text-xs border border-transparent transition-all cursor-pointer ${
+        isActive ? 'chat-history-active' : 'text-neutral-400 hover:text-neutral-200 hover:bg-[#141416]'
       }`;
 
       item.innerHTML = `
