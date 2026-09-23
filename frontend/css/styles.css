@@ -1,0 +1,112 @@
+/* Microsoft Azure Enterprise Theme Styles */
+:root {
+  --azure-blue: #0078D4;
+  --azure-light-blue: #00A4EF;
+  --azure-cyan: #00B7C3;
+  --azure-dark: #0B1120;
+  --azure-card-bg: rgba(15, 23, 42, 0.75);
+  --azure-border: rgba(56, 189, 248, 0.2);
+  --azure-glow: rgba(0, 120, 212, 0.35);
+}
+
+body {
+  background-color: #080E1A;
+  color: #F8FAFC;
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+  overflow-x: hidden;
+}
+
+/* Glassmorphism Cards */
+.glass-panel {
+  background: var(--azure-card-bg);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  border: 1px solid var(--azure-border);
+  box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.37);
+}
+
+.glass-panel-hover {
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.glass-panel-hover:hover {
+  border-color: rgba(56, 189, 248, 0.5);
+  box-shadow: 0 12px 40px 0 rgba(0, 120, 212, 0.25);
+  transform: translateY(-2px);
+}
+
+/* Glow Effects */
+.azure-glow-text {
+  text-shadow: 0 0 20px rgba(56, 189, 248, 0.5);
+}
+
+.azure-glow-box {
+  box-shadow: 0 0 25px rgba(0, 120, 212, 0.4);
+}
+
+/* Custom Scrollbars */
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+::-webkit-scrollbar-track {
+  background: #0B1120;
+}
+::-webkit-scrollbar-thumb {
+  background: #1E293B;
+  border-radius: 4px;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: #334155;
+}
+
+/* Pulse animation for active agents */
+@keyframes pulse-ring {
+  0% {
+    transform: scale(0.95);
+    box-shadow: 0 0 0 0 rgba(0, 183, 195, 0.7);
+  }
+  70% {
+    transform: scale(1);
+    box-shadow: 0 0 0 10px rgba(0, 183, 195, 0);
+  }
+  100% {
+    transform: scale(0.95);
+    box-shadow: 0 0 0 0 rgba(0, 183, 195, 0);
+  }
+}
+
+.agent-active-pulse {
+  animation: pulse-ring 2s infinite cubic-bezier(0.4, 0, 0.6, 1);
+}
+
+/* A2A Data Packet Stream animation */
+@keyframes packet-flow {
+  0% { stroke-dashoffset: 24; }
+  100% { stroke-dashoffset: 0; }
+}
+
+.a2a-line-active {
+  stroke-dasharray: 6 6;
+  animation: packet-flow 0.8s linear infinite;
+}
+
+/* Code & Terminal block */
+.terminal-window {
+  background: #050B14;
+  border: 1px solid rgba(30, 41, 59, 0.8);
+  font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", monospace;
+}
+
+/* Tab active indicator */
+.tab-active {
+  color: #38BDF8 !important;
+  border-bottom: 2px solid #38BDF8 !important;
+  background: rgba(56, 189, 248, 0.05);
+}
+
+/* Gradient borders */
+.gradient-border-azure {
+  position: relative;
+  background: linear-gradient(135deg, rgba(0, 120, 212, 0.2), rgba(0, 183, 195, 0.1));
+}
