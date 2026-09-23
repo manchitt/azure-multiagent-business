@@ -155,6 +155,27 @@ body {
   border-color: rgba(255, 255, 255, 0.14) !important;
 }
 
+/* Agent Monitor Status Styles */
+.agent-card-busy {
+  border-color: rgba(56, 189, 248, 0.4) !important;
+  background-color: #0E1626 !important;
+}
+
+.agent-badge-busy {
+  background-color: rgba(56, 189, 248, 0.15) !important;
+  color: #38BDF8 !important;
+  border-color: rgba(56, 189, 248, 0.4) !important;
+}
+
+.agent-card-idle, .agent-card-busy {
+  transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.agent-card-idle {
+  border-color: rgba(255, 255, 255, 0.06);
+  background-color: #0B0B0D;
+}
+
 /* Clean Apple Detail Accordion */
 details summary::-webkit-details-marker {
   display: none;

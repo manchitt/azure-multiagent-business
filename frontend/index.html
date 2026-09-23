@@ -13,7 +13,7 @@
 </head>
 <body class="h-full bg-black text-neutral-200 flex overflow-hidden">
 
-  <!-- ==================== SIDEBAR ==================== -->
+  <!-- ==================== LEFT SIDEBAR: CHAT HISTORY ==================== -->
   <aside id="chat-sidebar" class="w-64 bg-[#09090B] border-r border-neutral-900 flex-col justify-between hidden md:flex transition-all duration-200 z-30 shrink-0 select-none">
     
     <!-- Top Action: Brand & New Chat -->
@@ -51,7 +51,7 @@
     <div class="flex-1 overflow-y-auto px-2 py-3 space-y-1">
       <div class="flex items-center justify-between px-2 mb-2">
         <span class="text-[10px] font-mono text-neutral-500 uppercase tracking-wider">Recent Chats</span>
-        <button id="btn-clear-all-history" class="text-[10px] font-mono text-neutral-600 hover:text-neutral-400 transition-colors" title="Clear all chat history">Clear All</button>
+        <button id="btn-clear-all-history" class="text-[10px] font-mono text-neutral-600 hover:text-neutral-400 transition-colors cursor-pointer" title="Clear all chat history">Clear All</button>
       </div>
       <div id="chat-history-list" class="space-y-1">
         <!-- Rendered dynamically with title, time and delete button -->
@@ -74,7 +74,7 @@
   <div class="flex-1 flex flex-col h-full bg-black relative min-w-0">
 
     <!-- Topbar Header -->
-    <header class="h-12 border-b border-neutral-900 bg-black/80 flex items-center justify-between px-4 shrink-0 z-20 backdrop-blur-md">
+    <header class="h-12 border-b border-neutral-900 apple-header-blur flex items-center justify-between px-4 shrink-0 z-20 sticky top-0">
       <div class="flex items-center space-x-3">
         <!-- Sidebar Toggle (Mobile / Desktop) -->
         <button id="btn-toggle-sidebar" class="p-1.5 rounded-lg hover:bg-neutral-900 text-neutral-400 hover:text-white transition-colors cursor-pointer" title="Toggle Sidebar">
@@ -85,7 +85,6 @@
 
         <!-- Model / App Selector -->
         <div class="flex items-center space-x-2">
-          <!-- Logo in header -->
           <div class="w-4 h-4 shrink-0">
             <svg viewBox="0 0 32 32" class="w-full h-full text-white" fill="none">
               <path d="M16 6L25 11V21L16 26L7 21V11L16 6Z" stroke="white" stroke-width="2" stroke-linejoin="round"/>
@@ -93,13 +92,26 @@
             </svg>
           </div>
           <span class="font-bold text-sm text-white tracking-tight">MULTI AGENT BUSINESS ASSISTANT</span>
-          <span class="text-[10px] px-2 py-0.5 rounded-full bg-neutral-900 border border-neutral-800 text-neutral-400 font-mono">
+          <span class="text-[10px] px-2 py-0.5 rounded-full bg-neutral-900 border border-neutral-800 text-neutral-400 font-mono hidden sm:inline">
             gpt-4.1-mini
           </span>
         </div>
       </div>
 
+      <!-- Header Right Actions: Swarm Status Toggle + New Chat -->
       <div class="flex items-center space-x-2">
+        
+        <!-- Toggle Agent Swarm Sidebar Button -->
+        <button 
+          id="btn-toggle-agents" 
+          class="flex items-center space-x-1.5 px-2.5 py-1 rounded-lg bg-neutral-900 hover:bg-neutral-800 border border-neutral-800 text-xs font-mono text-neutral-300 hover:text-white transition-colors cursor-pointer" 
+          title="Toggle Active Agent Swarm Monitor"
+        >
+          <span class="w-2 h-2 rounded-full bg-emerald-500" id="header-swarm-indicator"></span>
+          <span>Agents (4)</span>
+        </button>
+
+        <!-- Quick Reset/New Chat Button -->
         <button id="btn-clear-chat" class="p-1.5 rounded-lg hover:bg-neutral-900 text-neutral-500 hover:text-neutral-300 transition-colors text-xs cursor-pointer" title="Start new chat">
           <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"></path>
@@ -131,7 +143,7 @@
           MULTI AGENT BUSINESS ASSISTANT
         </h1>
 
-        <p class="text-sm text-neutral-400 mb-6 max-w-md">
+        <p class="text-sm text-neutral-400 mb-6 max-w-md font-sans">
           Autonomous business intelligence coordinated via Microsoft Azure AI Foundry with specialized Research, Analyst, and Strategy agents.
         </p>
 
@@ -182,13 +194,13 @@
     <div class="p-4 bg-gradient-to-t from-black via-black/95 to-transparent shrink-0">
       <div class="max-w-3xl mx-auto">
         
-        <!-- Live Voice Listening Badge (Hidden by default) -->
+        <!-- Live Voice Listening Badge -->
         <div id="voice-status-banner" class="hidden mb-2 px-3 py-1.5 rounded-lg bg-neutral-900 border border-red-900/60 text-xs font-mono text-red-400 flex items-center justify-between">
           <span class="flex items-center space-x-2">
             <span class="w-2 h-2 rounded-full bg-red-500 animate-pulse"></span>
-            <span>Listening... Speak your business inquiry now.</span>
+            <span>Listening... Speak your business inquiry.</span>
           </span>
-          <button id="btn-cancel-voice" class="text-neutral-500 hover:text-neutral-300 text-[11px]">Cancel</button>
+          <button id="btn-cancel-voice" class="text-neutral-400 hover:text-white text-[11px] font-medium">Done</button>
         </div>
 
         <!-- Input Box -->
@@ -245,6 +257,114 @@
     </div>
 
   </div>
+
+  <!-- ==================== RIGHT SIDEBAR: AGENT SWARM MONITOR ==================== -->
+  <aside id="agents-sidebar" class="w-72 bg-[#08080A] border-l border-neutral-900 flex flex-col justify-between hidden transition-all duration-200 z-30 shrink-0 select-none fixed lg:relative right-0 top-0 bottom-0 lg:top-auto lg:bottom-auto h-full shadow-2xl lg:shadow-none">
+    
+    <!-- Header -->
+    <div class="p-3.5 border-b border-neutral-900 flex items-center justify-between">
+      <div>
+        <div class="flex items-center space-x-2">
+          <span class="font-bold text-xs text-white uppercase tracking-tight">Active Swarm</span>
+          <span class="text-[10px] px-1.5 py-0.2 rounded bg-neutral-900 text-neutral-400 font-mono">4 Nodes</span>
+        </div>
+        <div class="text-[10px] text-neutral-500 font-mono mt-0.5">Azure AI Foundry A2A Mesh</div>
+      </div>
+
+      <!-- Close button on right sidebar -->
+      <button id="btn-close-agents" class="p-1 rounded hover:bg-neutral-900 text-neutral-500 hover:text-neutral-300 transition-colors cursor-pointer" title="Hide Swarm Status">
+        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+        </svg>
+      </button>
+    </div>
+
+    <!-- Agent Cards List -->
+    <div class="flex-1 overflow-y-auto p-3 space-y-2.5">
+      
+      <!-- Agent 1: Orchestrator -->
+      <div id="card-agent-orchestrator" class="agent-card-idle p-3 rounded-xl border transition-all">
+        <div class="flex items-center justify-between mb-1.5">
+          <div class="flex items-center space-x-2">
+            <span class="text-sm">⚡</span>
+            <span class="font-semibold text-xs text-neutral-200">Orchestrator</span>
+          </div>
+          <span id="badge-agent-orchestrator" class="text-[10px] font-mono px-1.5 py-0.5 rounded bg-neutral-900 text-neutral-400 border border-neutral-800 flex items-center space-x-1">
+            <span class="w-1.5 h-1.5 rounded-full bg-emerald-500"></span>
+            <span>Idle</span>
+          </span>
+        </div>
+        <div class="text-[10px] text-neutral-400 font-mono">business-orchestrator:7</div>
+        <div id="task-agent-orchestrator" class="text-[10px] text-neutral-500 mt-1 truncate">Standing by for inquiries</div>
+      </div>
+
+      <!-- Agent 2: Research Agent -->
+      <div id="card-agent-research" class="agent-card-idle p-3 rounded-xl border transition-all">
+        <div class="flex items-center justify-between mb-1.5">
+          <div class="flex items-center space-x-2">
+            <span class="text-sm">🔎</span>
+            <span class="font-semibold text-xs text-neutral-200">Research Agent</span>
+          </div>
+          <span id="badge-agent-research" class="text-[10px] font-mono px-1.5 py-0.5 rounded bg-neutral-900 text-neutral-400 border border-neutral-800 flex items-center space-x-1">
+            <span class="w-1.5 h-1.5 rounded-full bg-emerald-500"></span>
+            <span>Idle</span>
+          </span>
+        </div>
+        <div class="text-[10px] text-sky-400/80 font-mono">Tool: Bing Web Search</div>
+        <div id="task-agent-research" class="text-[10px] text-neutral-500 mt-1 truncate">Standing by for research tasks</div>
+      </div>
+
+      <!-- Agent 3: Analyst Agent -->
+      <div id="card-agent-analyst" class="agent-card-idle p-3 rounded-xl border transition-all">
+        <div class="flex items-center justify-between mb-1.5">
+          <div class="flex items-center space-x-2">
+            <span class="text-sm">📊</span>
+            <span class="font-semibold text-xs text-neutral-200">Analyst Agent</span>
+          </div>
+          <span id="badge-agent-analyst" class="text-[10px] font-mono px-1.5 py-0.5 rounded bg-neutral-900 text-neutral-400 border border-neutral-800 flex items-center space-x-1">
+            <span class="w-1.5 h-1.5 rounded-full bg-emerald-500"></span>
+            <span>Idle</span>
+          </span>
+        </div>
+        <div class="text-[10px] text-emerald-400/80 font-mono">Tool: Azure AI Search Grounding</div>
+        <div id="task-agent-analyst" class="text-[10px] text-neutral-500 mt-1 truncate">Standing by for financial data</div>
+      </div>
+
+      <!-- Agent 4: Strategy Agent -->
+      <div id="card-agent-strategy" class="agent-card-idle p-3 rounded-xl border transition-all">
+        <div class="flex items-center justify-between mb-1.5">
+          <div class="flex items-center space-x-2">
+            <span class="text-sm">🎯</span>
+            <span class="font-semibold text-xs text-neutral-200">Strategy Agent</span>
+          </div>
+          <span id="badge-agent-strategy" class="text-[10px] font-mono px-1.5 py-0.5 rounded bg-neutral-900 text-neutral-400 border border-neutral-800 flex items-center space-x-1">
+            <span class="w-1.5 h-1.5 rounded-full bg-emerald-500"></span>
+            <span>Idle</span>
+          </span>
+        </div>
+        <div class="text-[10px] text-purple-400/80 font-mono">Tool: SWOT & Roadmap Architect</div>
+        <div id="task-agent-strategy" class="text-[10px] text-neutral-500 mt-1 truncate">Standing by for strategic synthesis</div>
+      </div>
+
+    </div>
+
+    <!-- Bottom Swarm Telemetry -->
+    <div class="p-3 border-t border-neutral-900 bg-black/40 text-[10px] font-mono text-neutral-500 space-y-1">
+      <div class="flex justify-between">
+        <span>Protocol:</span>
+        <span class="text-neutral-300">A2A Peer Mesh</span>
+      </div>
+      <div class="flex justify-between">
+        <span>Routing:</span>
+        <span class="text-neutral-300">Sub-second Azure Hub</span>
+      </div>
+      <div class="flex justify-between">
+        <span>Security:</span>
+        <span class="text-neutral-300">Entra ID Managed</span>
+      </div>
+    </div>
+
+  </aside>
 
   <!-- Scripts -->
   <script src="/js/query-console.js"></script>

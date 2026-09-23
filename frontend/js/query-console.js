@@ -213,6 +213,13 @@ class ChatApp {
     this.btnToggleSidebar = document.getElementById('btn-toggle-sidebar');
     this.sidebar = document.getElementById('chat-sidebar');
     this.historyList = document.getElementById('chat-history-list');
+
+    // Right Agent Swarm Monitor Sidebar
+    this.btnToggleAgents = document.getElementById('btn-toggle-agents');
+    this.btnCloseAgents = document.getElementById('btn-close-agents');
+    this.agentsSidebar = document.getElementById('agents-sidebar');
+    this.headerSwarmIndicator = document.getElementById('header-swarm-indicator');
+    this.swarmTimers = [];
   }
 
   initEventListeners() {
@@ -270,11 +277,33 @@ class ChatApp {
       });
     }
 
-    // Toggle Sidebar
+    // Toggle Left Chat History Sidebar
     if (this.btnToggleSidebar && this.sidebar) {
       this.btnToggleSidebar.addEventListener('click', () => {
-        this.sidebar.classList.toggle('hidden');
+        const isHidden = this.sidebar.classList.contains('hidden') || this.sidebar.style.display === 'none';
+        if (isHidden) {
+          this.sidebar.classList.remove('hidden');
+          this.sidebar.style.display = 'flex';
+        } else {
+          this.sidebar.classList.add('hidden');
+          this.sidebar.style.display = 'none';
+        }
       });
+    }
+
+    // Toggle Right Swarm Agents Monitor Sidebar
+    if (this.btnToggleAgents) {
+      this.btnToggleAgents.addEventListener('click', () => this.toggleAgentsSidebar());
+    }
+    if (this.btnCloseAgents) {
+      this.btnCloseAgents.addEventListener('click', () => this.toggleAgentsSidebar(false));
+    }
+
+    // Initialize sidebar default state: open on desktop, closed on mobile
+    if (window.innerWidth >= 1024) {
+      this.toggleAgentsSidebar(true);
+    } else {
+      this.toggleAgentsSidebar(false);
     }
 
     // Shortcut Cmd/Ctrl + K for New Chat
@@ -395,6 +424,108 @@ class ChatApp {
     }
   }
 
+  /* ==================== AGENT SWARM MONITOR CONTROLS ==================== */
+  toggleAgentsSidebar(force) {
+    if (!this.agentsSidebar) return;
+    const isCurrentlyOpen = this.agentsSidebar.style.display === 'flex' || 
+      (!this.agentsSidebar.classList.contains('hidden') && this.agentsSidebar.style.display !== 'none');
+    const shouldOpen = force !== undefined ? force : !isCurrentlyOpen;
+
+    if (shouldOpen) {
+      this.agentsSidebar.style.display = 'flex';
+      this.agentsSidebar.classList.remove('hidden');
+      if (this.btnToggleAgents) {
+        this.btnToggleAgents.classList.add('border-neutral-600', 'bg-neutral-800');
+      }
+    } else {
+      this.agentsSidebar.style.display = 'none';
+      this.agentsSidebar.classList.add('hidden');
+      if (this.btnToggleAgents) {
+        this.btnToggleAgents.classList.remove('border-neutral-600', 'bg-neutral-800');
+      }
+    }
+  }
+
+  setAgentStatus(agentKey, status, taskDetail) {
+    const card = document.getElementById(`card-agent-${agentKey}`);
+    const badge = document.getElementById(`badge-agent-${agentKey}`);
+    const task = document.getElementById(`task-agent-${agentKey}`);
+    if (!card || !badge) return;
+
+    if (status === 'busy' || status === 'working') {
+      card.classList.remove('agent-card-idle');
+      card.classList.add('agent-card-busy');
+      badge.className = 'agent-badge-busy text-[10px] font-mono px-1.5 py-0.5 rounded border flex items-center space-x-1';
+      badge.innerHTML = `
+        <span class="w-1.5 h-1.5 rounded-full bg-sky-400 animate-ping"></span>
+        <span class="capitalize">${status === 'busy' ? 'Busy' : 'Working'}</span>
+      `;
+    } else {
+      card.classList.remove('agent-card-busy');
+      card.classList.add('agent-card-idle');
+      badge.className = 'text-[10px] font-mono px-1.5 py-0.5 rounded bg-neutral-900 text-neutral-400 border border-neutral-800 flex items-center space-x-1';
+      badge.innerHTML = `
+        <span class="w-1.5 h-1.5 rounded-full bg-emerald-500"></span>
+        <span>Idle</span>
+      `;
+    }
+
+    if (task && taskDetail) {
+      task.textContent = taskDetail;
+    }
+  }
+
+  startSwarmLifecycle() {
+    if (this.swarmTimers) {
+      this.swarmTimers.forEach(t => clearTimeout(t));
+    }
+    this.swarmTimers = [];
+
+    if (this.headerSwarmIndicator) {
+      this.headerSwarmIndicator.className = 'w-2 h-2 rounded-full bg-sky-400 animate-ping';
+    }
+
+    // Step 1: Orchestrator begins coordinating
+    this.setAgentStatus('orchestrator', 'busy', 'Decomposing query & orchestrating mesh...');
+    this.setAgentStatus('research', 'idle', 'Queued: awaiting search dispatch');
+    this.setAgentStatus('analyst', 'idle', 'Queued: awaiting grounding dispatch');
+    this.setAgentStatus('strategy', 'idle', 'Queued: awaiting synthesis');
+
+    // Step 2: Research Agent dispatched
+    this.swarmTimers.push(setTimeout(() => {
+      this.setAgentStatus('research', 'working', 'Querying live Bing search & market feeds...');
+      this.setAgentStatus('orchestrator', 'busy', 'Streaming research data packets...');
+    }, 900));
+
+    // Step 3: Analyst Agent processes data
+    this.swarmTimers.push(setTimeout(() => {
+      this.setAgentStatus('research', 'idle', 'Research data grounded');
+      this.setAgentStatus('analyst', 'working', 'Executing Azure AI Search & financial grounding...');
+    }, 2200));
+
+    // Step 4: Strategy Agent constructs response
+    this.swarmTimers.push(setTimeout(() => {
+      this.setAgentStatus('analyst', 'idle', 'Financial grounding complete');
+      this.setAgentStatus('strategy', 'working', 'Synthesizing strategic execution plan...');
+    }, 3800));
+  }
+
+  resetAllAgentsToIdle() {
+    if (this.swarmTimers) {
+      this.swarmTimers.forEach(t => clearTimeout(t));
+      this.swarmTimers = [];
+    }
+
+    this.setAgentStatus('orchestrator', 'idle', 'Standing by for inquiries');
+    this.setAgentStatus('research', 'idle', 'Standing by for research tasks');
+    this.setAgentStatus('analyst', 'idle', 'Standing by for financial data');
+    this.setAgentStatus('strategy', 'idle', 'Standing by for strategic synthesis');
+
+    if (this.headerSwarmIndicator) {
+      this.headerSwarmIndicator.className = 'w-2 h-2 rounded-full bg-emerald-500';
+    }
+  }
+
   /* ==================== CHAT ACTIONS & API ==================== */
   autoResizeInput() {
     if (!this.chatInput) return;
@@ -418,6 +549,7 @@ class ChatApp {
   startNewChat() {
     this.tts.stop();
     this.stopVoiceListening();
+    this.resetAllAgentsToIdle();
     this.activeConversationId = null;
     this.messagesContainer.innerHTML = '';
     this.messagesContainer.classList.add('hidden');
@@ -475,6 +607,9 @@ class ChatApp {
     this.appendAssistantLoadingBubble(assistantRowId);
     this.scrollToBottom();
 
+    // 3. Trigger Live Agent Swarm Monitor Workflow
+    this.startSwarmLifecycle();
+
     try {
       // Call same-origin POST /chat
       const resp = await fetch(`${API}/chat`, {
@@ -506,6 +641,7 @@ class ChatApp {
       console.error("Chat error:", err);
       this.renderAssistantError(assistantRowId, err.message);
     } finally {
+      this.resetAllAgentsToIdle();
       this.isGenerating = false;
       this.updateSendButtonState();
       this.scrollToBottom();
