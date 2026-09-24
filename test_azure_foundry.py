@@ -10,6 +10,16 @@ async def main():
     assert h["agent"] == "business-orchestrator"
     print("✓ GET /api/health passed!\n")
 
+    print("Testing Guardrail with off-topic non-business query...")
+    req_offtopic = ChatMessageRequest(message="Give me a chocolate chip cookie recipe")
+    res_offtopic = await chat(req_offtopic)
+    print("Guardrail response:")
+    print("  Triggered:", res_offtopic.get("guardrail_triggered"))
+    print("  Reason:", res_offtopic.get("guardrail_reason"))
+    print("  Response:", res_offtopic.get("response"))
+    assert res_offtopic.get("guardrail_triggered") is True
+    print("✓ Guardrail successfully blocked off-topic request!\n")
+
     print("Testing POST /chat with real Azure AI Foundry Orchestrator...")
     req = ChatMessageRequest(message="What are the top 3 considerations for enterprise multi-agent deployment on Azure?")
     res = await chat(req)
@@ -20,7 +30,7 @@ async def main():
     print("  Status:", res.get("status"))
     print("  Usage:", res.get("usage"))
     print("  Response text:\n" + ("-" * 40))
-    print(res.get("response"))
+    print(res.get("response")[:400] + "...")
     print("-" * 40)
     print("  Agent Activity count:", len(res.get("agent_activity", [])))
     print("  Tool Calls count:", len(res.get("tool_calls", [])))
@@ -28,7 +38,7 @@ async def main():
 
     assert res.get("status") == "completed"
     assert len(res.get("response", "")) > 0
-    print("\n🎉 ALL REAL AZURE AI FOUNDRY ENDPOINTS VERIFIED SUCCESSFULLY!")
+    print("\n🎉 ALL REAL AZURE AI FOUNDRY ENDPOINTS & GUARDRAILS VERIFIED SUCCESSFULLY!")
 
 if __name__ == "__main__":
     asyncio.run(main())
