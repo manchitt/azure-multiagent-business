@@ -1,11 +1,11 @@
 /**
- * MULTI AGENT BUSINESS ASSISTANT — Apple Minimal Pure Black Edition
+ * MABA — Multi-Agent Business Assistant (Apple Minimal Pure Black Edition)
  * 
  * Features:
  * 1. Text-to-Speech (TTS) Voice Engine (Siri-like natural female voice) for spoken responses
  * 2. Real-Time Voice Search (Speech-to-Text via Web Speech API)
  * 3. Persistent Multi-Turn Conversation Recents in Sidebar
- * 4. Same-origin integration with Azure AI Foundry business-orchestrator:12
+ * 4. Same-origin integration with Azure AI Foundry business-orchestrator:13
  */
 
 const API = "";
@@ -646,6 +646,10 @@ class ChatApp {
       console.error("Chat error:", err);
       this.renderAssistantError(assistantRowId, err.message);
     } finally {
+      if (this.loadingTimers) {
+        this.loadingTimers.forEach(t => clearTimeout(t));
+        this.loadingTimers = [];
+      }
       this.resetAllAgentsToIdle();
       this.isGenerating = false;
       this.updateSendButtonState();
@@ -676,11 +680,27 @@ class ChatApp {
       <div class="flex-1 space-y-3 min-w-0">
         <div class="inline-flex items-center space-x-2 px-3 py-1.5 rounded-lg bg-neutral-950 border border-neutral-900 text-xs font-mono text-neutral-400">
           <span class="w-2 h-2 rounded-full bg-sky-400 animate-ping"></span>
-          <span>Orchestrating agents (Orchestrator ➔ Research ➔ Analyst ➔ Strategy)...</span>
+          <span id="${rowId}-status-text">MABA Orchestrator initiating multi-agent swarm...</span>
         </div>
       </div>
     `;
     this.messagesContainer.appendChild(row);
+
+    // Staged progress indicators for brisk responsiveness
+    const t1 = setTimeout(() => {
+      const el = document.getElementById(`${rowId}-status-text`);
+      if (el) el.textContent = "Analyzing strategic context & metrics...";
+    }, 1200);
+    const t2 = setTimeout(() => {
+      const el = document.getElementById(`${rowId}-status-text`);
+      if (el) el.textContent = "Evaluating benchmarks & financial models...";
+    }, 3000);
+    const t3 = setTimeout(() => {
+      const el = document.getElementById(`${rowId}-status-text`);
+      if (el) el.textContent = "Synthesizing executive deliverable...";
+    }, 5500);
+    if (!this.loadingTimers) this.loadingTimers = [];
+    this.loadingTimers.push(t1, t2, t3);
   }
 
   updateAssistantBubbleWithRealData(rowId, data, autoSpeak = false) {
@@ -811,10 +831,11 @@ class ChatApp {
 
         <!-- Apple-Style Bottom Action Bar (Listen + Copy + Telemetry) -->
         <div class="flex flex-wrap items-center justify-between pt-2.5 text-[11px] font-mono text-neutral-500 gap-2 border-t border-neutral-900/40">
-          <div class="flex items-center space-x-3">
+          <div class="flex items-center space-x-2.5">
             <span>Tokens: ${usage.total_tokens || 0}</span>
             <span>•</span>
-            <span>Latency: ${usage.latency_ms || 0}ms</span>
+            <span>Latency: ${data.cached ? '<span class="text-emerald-400 font-bold">0ms (Instant Cache)</span>' : `${usage.latency_ms || 0}ms`}</span>
+            ${data.cached ? '<span class="px-1.5 py-0.2 rounded bg-emerald-950/80 text-emerald-400 border border-emerald-900/60 font-mono text-[9px]">⚡ Fast Cache</span>' : ''}
           </div>
 
           <div class="flex items-center space-x-2">

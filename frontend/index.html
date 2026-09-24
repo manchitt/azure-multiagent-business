@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>MULTI AGENT BUSINESS ASSISTANT</title>
+  <title>MABA — Multi-Agent Business Assistant</title>
   
   <!-- Tailwind CSS via CDN -->
   <script src="https://cdn.tailwindcss.com"></script>
@@ -32,7 +32,10 @@
               <circle cx="8" cy="20.5" r="1.5" fill="#A78BFA"/>
             </svg>
           </div>
-          <span class="font-bold text-xs tracking-tight text-white uppercase truncate">Multi Agent Business</span>
+          <div>
+            <div class="font-extrabold text-xs tracking-wider text-white uppercase">MABA</div>
+            <div class="text-[9px] text-neutral-500 font-sans tracking-tight">Business Intelligence</div>
+          </div>
         </div>
       </div>
 
@@ -64,7 +67,7 @@
         <span class="text-[11px] font-semibold text-white">Azure AI Foundry</span>
         <span id="sidebar-status-dot" class="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span>
       </div>
-      <div class="text-[10px] text-neutral-500 truncate" id="sidebar-agent-label">business-orchestrator:12</div>
+      <div class="text-[10px] text-neutral-500 truncate" id="sidebar-agent-label">business-orchestrator:13</div>
       <div class="text-[9px] text-neutral-600 mt-1">GPT-5-mini • Guardrailed</div>
     </div>
 
@@ -84,15 +87,18 @@
         </button>
 
         <!-- Model / App Selector -->
-        <div class="flex items-center space-x-2">
+        <div class="flex items-center space-x-2.5">
           <div class="w-4 h-4 shrink-0">
             <svg viewBox="0 0 32 32" class="w-full h-full text-white" fill="none">
               <path d="M16 6L25 11V21L16 26L7 21V11L16 6Z" stroke="white" stroke-width="2" stroke-linejoin="round"/>
               <circle cx="16" cy="16" r="3" fill="white"/>
             </svg>
           </div>
-          <span class="font-bold text-sm text-white tracking-tight">MULTI AGENT BUSINESS ASSISTANT</span>
+          <span class="font-extrabold text-sm text-white tracking-wider">MABA</span>
           <span class="text-[10px] px-2 py-0.5 rounded-full bg-neutral-900 border border-neutral-800 text-neutral-400 font-mono hidden sm:inline">
+            Multi-Agent Business Assistant
+          </span>
+          <span class="text-[10px] px-2 py-0.5 rounded-full bg-neutral-900 border border-neutral-800 text-emerald-400 font-mono hidden sm:inline">
             gpt-5-mini
           </span>
         </div>
@@ -140,11 +146,11 @@
         </div>
 
         <h1 class="text-2xl sm:text-3xl font-semibold tracking-tight text-white mb-2">
-          How can I help your business today?
+          How can MABA help your business today?
         </h1>
 
         <p class="text-sm text-neutral-400 mb-8 max-w-md font-sans leading-relaxed">
-          Multi-agent intelligence for market research, financial modeling, and corporate strategy.
+          High-velocity multi-agent intelligence for market research, financial modeling, and corporate strategy.
         </p>
 
         <!-- Suggestion Starter Cards -->
@@ -197,7 +203,7 @@
           <textarea 
             id="chat-input" 
             rows="1" 
-            placeholder="Ask MULTI AGENT BUSINESS ASSISTANT anything..." 
+            placeholder="Ask MABA anything about market, strategy, or finance..." 
             class="w-full bg-transparent text-sm text-neutral-100 placeholder-neutral-500 px-3 py-1.5 focus:outline-none resize-none font-sans leading-relaxed"
           ></textarea>
 
@@ -239,7 +245,7 @@
         </div>
 
         <div class="text-[11px] text-neutral-600 text-center mt-2 font-sans select-none">
-          MULTI AGENT BUSINESS ASSISTANT • Built on Microsoft Azure AI Foundry
+          MABA • Multi-Agent Business Assistant • Built on Microsoft Azure AI Foundry
         </div>
 
       </div>
@@ -283,7 +289,7 @@
             <span>Idle</span>
           </span>
         </div>
-        <div class="text-[10px] text-neutral-400 font-mono">business-orchestrator:12 • Guardrailed</div>
+        <div class="text-[10px] text-neutral-400 font-mono">business-orchestrator:13 • Guardrailed</div>
         <div id="task-agent-orchestrator" class="text-[10px] text-neutral-500 mt-1 truncate">Standing by for inquiries</div>
       </div>
 

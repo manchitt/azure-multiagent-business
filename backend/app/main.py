@@ -10,9 +10,9 @@ from pydantic import BaseModel
 from .services.azure_foundry import AzureFoundryService
 
 app = FastAPI(
-    title="Azure AI Foundry Multi-Agent Business Assistant",
-    description="Production FastAPI service integrating Azure AI Foundry business-orchestrator:12 (GPT-5-mini).",
-    version="2.0.0",
+    title="MABA — Multi-Agent Business Assistant",
+    description="Production FastAPI service for MABA powered by Azure AI Foundry business-orchestrator:13 (GPT-5-mini).",
+    version="2.1.0",
 )
 
 # CORS Middleware (allows same-origin as well as any client)
@@ -26,6 +26,13 @@ app.add_middleware(
 
 # Real Azure AI Foundry Service Singleton
 azure_foundry = AzureFoundryService()
+
+
+@app.on_event("startup")
+async def startup_event():
+    """Warm up Azure AI Foundry connections on boot to eliminate initial request latency."""
+    azure_foundry.warmup()
+
 
 # Directory for static frontend assets
 BASE_DIR = Path(__file__).resolve().parent.parent.parent
@@ -47,7 +54,7 @@ async def health():
 @app.post("/chat")
 async def chat(request: ChatMessageRequest):
     """
-    Main chat endpoint calling the real Azure AI Foundry business-orchestrator (v12).
+    Main chat endpoint calling the real Azure AI Foundry business-orchestrator (v13).
     Accepts message or query or input.
     """
     user_prompt = request.message or request.query or request.input

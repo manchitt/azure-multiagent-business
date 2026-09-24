@@ -14,7 +14,7 @@ if _LOCAL_AZURE.exists():
 
 
 class AzureFoundryService:
-    """Real Microsoft Azure AI Foundry client connecting to business-orchestrator (v12)."""
+    """Real Microsoft Azure AI Foundry client connecting to business-orchestrator (v13)."""
 
     def __init__(self):
         self.endpoint = os.getenv(
@@ -22,10 +22,18 @@ class AzureFoundryService:
             "https://multi-agent-business.services.ai.azure.com/api/projects/multi-agent-business",
         )
         self.agent_name = "business-orchestrator"
-        self.agent_version = os.getenv("AZURE_AGENT_VERSION", "12")
+        self.agent_version = os.getenv("AZURE_AGENT_VERSION", "13")
         self.model_name = os.getenv("AZURE_MODEL_NAME", "gpt-5-mini")
         self._client: Optional[AIProjectClient] = None
         self._openai_client = None
+        self._cache: Dict[str, Dict[str, Any]] = {}
+
+    def warmup(self):
+        """Pre-authenticates and warms connection pool to eliminate initial query delay."""
+        try:
+            self._get_openai_client()
+        except Exception:
+            pass
 
     def _get_client(self) -> AIProjectClient:
         if self._client is None:
@@ -49,7 +57,8 @@ class AzureFoundryService:
         """Returns live system health and configuration details."""
         return {
             "status": "healthy",
-            "service": "Azure AI Foundry Multi-Agent Business Assistant",
+            "service": "MABA — Multi-Agent Business Assistant (Azure AI Foundry)",
+            "app_name": "MABA",
             "agent": self.agent_name,
             "version": self.agent_version,
             "model": self.model_name,
@@ -57,6 +66,7 @@ class AzureFoundryService:
             "guardrails": "Active (Domain Boundary, Anti-Hallucination, Prompt Injection Defense)",
             "orchestration_protocol": "A2A (Agent-to-Agent)",
             "auth_type": "DefaultAzureCredential",
+            "cached_entries": len(self._cache),
         }
 
     def check_preflight_guardrail(self, message: str) -> Optional[Dict[str, Any]]:
@@ -76,7 +86,7 @@ class AzureFoundryService:
         if any(p in clean for p in injection_patterns):
             return self._build_guardrail_rejection(
                 "Security & System Integrity Policy Violation",
-                "I am the Multi-Agent Business Assistant. For enterprise security and governance compliance, system prompt exfiltration and instruction overrides are strictly prohibited. Please submit a valid business intelligence, financial analysis, or corporate strategy inquiry."
+                "I am MABA (Multi-Agent Business Assistant). For enterprise security and governance compliance, system prompt exfiltration and instruction overrides are strictly prohibited. Please submit a valid business intelligence, financial analysis, or corporate strategy inquiry."
             )
 
         # 2. Obvious Out-of-Scope / Non-Business detection
@@ -96,7 +106,7 @@ class AzureFoundryService:
         if not has_business_intent and any(ot in clean for ot in off_topic_exact):
             return self._build_guardrail_rejection(
                 "Domain Boundary Policy: Business Inquiries Only",
-                "I am the Multi-Agent Business Assistant, specialized strictly for enterprise business intelligence, financial analysis, market research, and corporate strategy. I cannot assist with non-business inquiries. Please submit a business, market, or strategic inquiry."
+                "I am MABA (Multi-Agent Business Assistant), specialized strictly for enterprise business intelligence, financial analysis, market research, and corporate strategy. I cannot assist with non-business inquiries. Please submit a business, market, or strategic inquiry."
             )
 
         return None
@@ -134,22 +144,50 @@ class AzureFoundryService:
         }
 
     async def execute_query(self, message: str) -> Dict[str, Any]:
-        """Executes a query with multi-tier guardrail validation against Azure AI Foundry."""
+        """Executes a query with fast multi-tier caching and guardrail validation against Azure AI Foundry."""
         guardrail_hit = self.check_preflight_guardrail(message)
         if guardrail_hit:
             return guardrail_hit
-        return await asyncio.to_thread(self._sync_call_orchestrator, message)
+
+        # Fast in-memory cache check (instant sub-millisecond response for repeat queries)
+        cache_key = message.strip().lower()
+        now = datetime.utcnow()
+        if cache_key in self._cache:
+            entry = self._cache[cache_key]
+            # 20-minute cache TTL
+            if (now - entry["cached_at"]).total_seconds() < 1200:
+                import copy
+                cached_data = copy.deepcopy(entry["data"])
+                cached_data["cached"] = True
+                if "usage" in cached_data and isinstance(cached_data["usage"], dict):
+                    cached_data["usage"]["latency_ms"] = 0
+                    cached_data["usage"]["cache_hit"] = True
+                return cached_data
+
+        result = await asyncio.to_thread(self._sync_call_orchestrator, message)
+
+        # Store in cache
+        if result and result.get("status") == "completed":
+            if len(self._cache) > 200:
+                oldest_key = next(iter(self._cache))
+                del self._cache[oldest_key]
+            self._cache[cache_key] = {"data": result, "cached_at": now}
+
+        return result
 
     def _sync_call_orchestrator(self, message: str) -> Dict[str, Any]:
         """Synchronously invokes the Azure AI Foundry OpenAI agent endpoint."""
         oai = self._get_openai_client()
         start_time = datetime.utcnow()
 
+        # High-velocity directive to minimize reasoning overhead and maximize speed
+        fast_message = f"{message}\n\n[Executive Directive: Deliver high-velocity, high-impact intelligence. State conclusions immediately, followed by bulleted key benchmarks or prioritized action steps. Avoid preamble or conversational padding.]"
+
         # Call the real Azure Foundry agent with resilient tool fallback
         try:
             response = oai.responses.create(
                 model=self.model_name,
-                input=message,
+                input=fast_message,
             )
         except Exception as e:
             err_str = str(e).lower()

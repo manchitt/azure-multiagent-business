@@ -21,7 +21,7 @@ async function checkSystemStatus() {
     const resp = await fetch(`${APP_API}/api/health`);
     if (resp.ok) {
       const data = await resp.json();
-      const label = `${data.agent || 'business-orchestrator'}:v${data.version || '12'}`;
+      const label = `${data.agent || 'business-orchestrator'}:v${data.version || '13'}`;
       if (sidebarAgentLabel) sidebarAgentLabel.textContent = label;
       if (bottomStatusLabel) bottomStatusLabel.textContent = `${label} Active`;
       if (sidebarDot) {

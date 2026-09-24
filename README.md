@@ -1,4 +1,4 @@
-# ⚡ AI-Powered Multi-Agent Business Assistant
+# ⚡ MABA — Multi-Agent Business Assistant
 
 > Built on **Microsoft Azure AI Foundry** • **GPT-5-mini** • **Multi-Agent Orchestration (A2A)** • **Web Search** • **Document Grounding** • **FastAPI** • **Modern Frontend**
 
@@ -11,7 +11,7 @@ User (Web Interface)
 FastAPI Backend (POST /chat)
   │
   ▼
-Azure AI Foundry business-orchestrator:12 (GPT-5-mini)
+Azure AI Foundry business-orchestrator:13 (GPT-5-mini)
   │
   ▼
 A2A (Agent-to-Agent Mesh)
