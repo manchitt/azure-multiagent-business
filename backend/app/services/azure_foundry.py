@@ -57,8 +57,8 @@ class AzureFoundryService:
         """Returns live system health and configuration details."""
         return {
             "status": "healthy",
-            "service": "MABA — Multi-Agent Business Assistant (Azure AI Foundry)",
-            "app_name": "MABA",
+            "service": "Azure AI Foundry Multi-Agent Business Assistant",
+            "app_name": "MULTI AGENT BUSINESS ASSISTANT",
             "agent": self.agent_name,
             "version": self.agent_version,
             "model": self.model_name,
@@ -86,7 +86,7 @@ class AzureFoundryService:
         if any(p in clean for p in injection_patterns):
             return self._build_guardrail_rejection(
                 "Security & System Integrity Policy Violation",
-                "I am MABA (Multi-Agent Business Assistant). For enterprise security and governance compliance, system prompt exfiltration and instruction overrides are strictly prohibited. Please submit a valid business intelligence, financial analysis, or corporate strategy inquiry."
+                "I am the Multi-Agent Business Assistant. For enterprise security and governance compliance, system prompt exfiltration and instruction overrides are strictly prohibited. Please submit a valid business intelligence, financial analysis, or corporate strategy inquiry."
             )
 
         # 2. Obvious Out-of-Scope / Non-Business detection
@@ -106,7 +106,7 @@ class AzureFoundryService:
         if not has_business_intent and any(ot in clean for ot in off_topic_exact):
             return self._build_guardrail_rejection(
                 "Domain Boundary Policy: Business Inquiries Only",
-                "I am MABA (Multi-Agent Business Assistant), specialized strictly for enterprise business intelligence, financial analysis, market research, and corporate strategy. I cannot assist with non-business inquiries. Please submit a business, market, or strategic inquiry."
+                "I am the Multi-Agent Business Assistant, specialized strictly for enterprise business intelligence, financial analysis, market research, and corporate strategy. I cannot assist with non-business inquiries. Please submit a business, market, or strategic inquiry."
             )
 
         return None

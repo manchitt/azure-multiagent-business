@@ -8,7 +8,7 @@ async def main():
     print("Health response:", h)
     assert h["status"] == "healthy"
     assert h["agent"] == "business-orchestrator"
-    assert h["app_name"] == "MABA"
+    assert h["app_name"] == "MULTI AGENT BUSINESS ASSISTANT"
     print("✓ GET /api/health passed!\n")
 
     print("Testing Guardrail with off-topic non-business query...")
@@ -49,7 +49,7 @@ async def main():
     assert res_cached.get("usage", {}).get("latency_ms") == 0
     print("✓ Instant cache hit (0ms) verified successfully!\n")
 
-    print("\n🎉 ALL MABA REAL AZURE AI FOUNDRY ENDPOINTS, GUARDRAILS & CACHE VERIFIED SUCCESSFULLY!")
+    print("\n🎉 ALL REAL AZURE AI FOUNDRY ENDPOINTS, GUARDRAILS & CACHE VERIFIED SUCCESSFULLY!")
 
 if __name__ == "__main__":
     asyncio.run(main())

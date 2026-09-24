@@ -1,5 +1,5 @@
 /**
- * MABA — Multi-Agent Business Assistant (Apple Minimal Pure Black Edition)
+ * MULTI AGENT BUSINESS ASSISTANT — Apple Minimal Pure Black Edition
  * 
  * Features:
  * 1. Text-to-Speech (TTS) Voice Engine (Siri-like natural female voice) for spoken responses
@@ -680,7 +680,7 @@ class ChatApp {
       <div class="flex-1 space-y-3 min-w-0">
         <div class="inline-flex items-center space-x-2 px-3 py-1.5 rounded-lg bg-neutral-950 border border-neutral-900 text-xs font-mono text-neutral-400">
           <span class="w-2 h-2 rounded-full bg-sky-400 animate-ping"></span>
-          <span id="${rowId}-status-text">MABA Orchestrator initiating multi-agent swarm...</span>
+          <span id="${rowId}-status-text">Orchestrator initiating multi-agent swarm...</span>
         </div>
       </div>
     `;

@@ -1,4 +1,4 @@
-# ⚡ MABA — Multi-Agent Business Assistant
+# ⚡ MULTI AGENT BUSINESS ASSISTANT
 
 > Built on **Microsoft Azure AI Foundry** • **GPT-5-mini** • **Multi-Agent Orchestration (A2A)** • **Web Search** • **Document Grounding** • **FastAPI** • **Modern Frontend**
 

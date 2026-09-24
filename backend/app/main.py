@@ -10,8 +10,8 @@ from pydantic import BaseModel
 from .services.azure_foundry import AzureFoundryService
 
 app = FastAPI(
-    title="MABA — Multi-Agent Business Assistant",
-    description="Production FastAPI service for MABA powered by Azure AI Foundry business-orchestrator:13 (GPT-5-mini).",
+    title="Azure AI Foundry Multi-Agent Business Assistant",
+    description="Production FastAPI service integrating Azure AI Foundry business-orchestrator:13 (GPT-5-mini).",
     version="2.1.0",
 )
 
