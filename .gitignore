@@ -4,6 +4,7 @@
 *.env
 *.pem
 *.key
+.azure/
 
 # Python
 __pycache__/

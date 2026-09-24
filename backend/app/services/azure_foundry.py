@@ -1,14 +1,20 @@
 import os
 import asyncio
+from pathlib import Path
 from typing import Dict, Any, List, Optional
 from datetime import datetime
 
 from azure.ai.projects import AIProjectClient
 from azure.identity import DefaultAzureCredential
 
+# Ensure local workspace .azure directory is accessible for Azure CLI token credentials
+_LOCAL_AZURE = Path(__file__).resolve().parent.parent.parent / ".azure"
+if _LOCAL_AZURE.exists():
+    os.environ.setdefault("AZURE_CONFIG_DIR", str(_LOCAL_AZURE))
+
 
 class AzureFoundryService:
-    """Real Microsoft Azure AI Foundry client connecting to business-orchestrator (v10)."""
+    """Real Microsoft Azure AI Foundry client connecting to business-orchestrator (v12)."""
 
     def __init__(self):
         self.endpoint = os.getenv(
@@ -23,6 +29,8 @@ class AzureFoundryService:
 
     def _get_client(self) -> AIProjectClient:
         if self._client is None:
+            if _LOCAL_AZURE.exists():
+                os.environ.setdefault("AZURE_CONFIG_DIR", str(_LOCAL_AZURE))
             cred = DefaultAzureCredential()
             self._client = AIProjectClient(
                 endpoint=self.endpoint,
