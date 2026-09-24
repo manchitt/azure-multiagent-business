@@ -11,7 +11,7 @@ from .services.azure_foundry import AzureFoundryService
 
 app = FastAPI(
     title="Azure AI Foundry Multi-Agent Business Assistant",
-    description="Production FastAPI service integrating Azure AI Foundry business-orchestrator:7.",
+    description="Production FastAPI service integrating Azure AI Foundry business-orchestrator:12 (GPT-5-mini).",
     version="2.0.0",
 )
 
@@ -47,7 +47,7 @@ async def health():
 @app.post("/chat")
 async def chat(request: ChatMessageRequest):
     """
-    Main chat endpoint calling the real Azure AI Foundry business-orchestrator (v7).
+    Main chat endpoint calling the real Azure AI Foundry business-orchestrator (v12).
     Accepts message or query or input.
     """
     user_prompt = request.message or request.query or request.input

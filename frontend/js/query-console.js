@@ -5,7 +5,7 @@
  * 1. Text-to-Speech (TTS) Voice Engine (Siri-like natural female voice) for spoken responses
  * 2. Real-Time Voice Search (Speech-to-Text via Web Speech API)
  * 3. Persistent Multi-Turn Conversation Recents in Sidebar
- * 4. Same-origin integration with Azure AI Foundry business-orchestrator:7
+ * 4. Same-origin integration with Azure AI Foundry business-orchestrator:12
  */
 
 const API = "";
@@ -183,14 +183,15 @@ class ChatApp {
     this.activeConversationId = null;
     this.isGenerating = false;
     this.isListening = false;
+    this.wasVoiceInput = false;
     this.recognition = null;
 
-    // Starter Prompts
+    // Short, real-world executive starter prompts
     this.starters = {
-      preset1: "Analyze Microsoft Azure AI Foundry's enterprise moat in multi-agent orchestration compared to AWS Bedrock and GCP Vertex AI. Evaluate developer adoption, GPT-5-mini cost efficiency, and 90-day market capture strategy.",
-      preset2: "Formulate an expansion plan for a B2B FinTech SaaS platform launching autonomous multi-agent underwriting on Azure. Include unit economics, gross margin projections, and a 30-60-90 day execution roadmap.",
-      preset3: "Perform strategic due diligence and ROI modeling for replacing legacy enterprise business consulting with an Azure AI Foundry 4-agent autonomous swarm. Benchmarking cost savings, speed multipliers, and compliance.",
-      preset4: "Evaluate market sizing (CAGR), top 3 competitor vulnerabilities, and 90-day execution roadmaps for AI-powered autonomous enterprise operations in 2026.",
+      preset1: "Compare top competitors in enterprise B2B SaaS, their pricing models, and key vulnerabilities.",
+      preset2: "What are healthy SaaS gross margins, CAC payback, and LTV/CAC benchmarks for Series B?",
+      preset3: "Draft a 30-60-90 day strategic execution roadmap for a B2B product launch.",
+      preset4: "Calculate TAM, SAM, and key growth drivers for cloud AI software.",
     };
 
     this.initElements();
@@ -363,6 +364,7 @@ class ChatApp {
 
       const spoken = (finalTranscript + interimTranscript).trim();
       if (this.chatInput && spoken) {
+        this.wasVoiceInput = true;
         const combined = this.initialInputText ? `${this.initialInputText} ${spoken}` : spoken;
         this.chatInput.value = combined;
         this.autoResizeInput();
@@ -567,6 +569,9 @@ class ChatApp {
     const prompt = this.chatInput.value.trim();
     if (!prompt || this.isGenerating) return;
 
+    const shouldAutoSpeak = this.wasVoiceInput;
+    this.wasVoiceInput = false;
+
     this.tts.stop();
     this.stopVoiceListening();
     this.isGenerating = true;
@@ -605,7 +610,7 @@ class ChatApp {
     // 2. Render Temporary Assistant Loading Bubble
     const assistantRowId = `msg-${Date.now()}`;
     this.appendAssistantLoadingBubble(assistantRowId);
-    this.scrollToBottom();
+    this.scrollToResponseStart(assistantRowId);
 
     // 3. Trigger Live Agent Swarm Monitor Workflow
     this.startSwarmLifecycle();
@@ -629,7 +634,7 @@ class ChatApp {
       const data = await resp.json();
       
       // Update assistant bubble with real Azure AI Foundry response
-      this.updateAssistantBubbleWithRealData(assistantRowId, data);
+      this.updateAssistantBubbleWithRealData(assistantRowId, data, shouldAutoSpeak);
 
       // Save assistant response to conversation history
       if (currentConv) {
@@ -644,7 +649,8 @@ class ChatApp {
       this.resetAllAgentsToIdle();
       this.isGenerating = false;
       this.updateSendButtonState();
-      this.scrollToBottom();
+      // Keep view anchored at the start of the assistant response
+      this.scrollToResponseStart(assistantRowId);
     }
   }
 
@@ -677,7 +683,7 @@ class ChatApp {
     this.messagesContainer.appendChild(row);
   }
 
-  updateAssistantBubbleWithRealData(rowId, data) {
+  updateAssistantBubbleWithRealData(rowId, data, autoSpeak = false) {
     const row = document.getElementById(rowId);
     if (!row) return;
 
@@ -716,23 +722,73 @@ class ChatApp {
       `;
     }
 
-    // Build Citations & Tools Chips
+    // Clean deduplicated Citations & Tools Badges (Max 3-4 clean badges)
     let sourcesHtml = '';
-    if (citations.length > 0 || toolCalls.length > 0) {
+    const uniqueToolTypes = new Set();
+    toolCalls.forEach(t => {
+      const type = (t.type || t.name || '').toLowerCase();
+      if (type.includes('search') || type.includes('bing') || type.includes('web')) {
+        uniqueToolTypes.add('web_search');
+      } else if (type.includes('ground') || type.includes('doc') || type.includes('file')) {
+        uniqueToolTypes.add('grounding');
+      } else if (type) {
+        uniqueToolTypes.add(type);
+      }
+    });
+
+    const uniqueCitations = [];
+    const seenTitles = new Set();
+    citations.forEach(c => {
+      const title = (c.title || c.url || 'Grounded Document').trim();
+      if (!seenTitles.has(title)) {
+        seenTitles.add(title);
+        uniqueCitations.push({ title, url: c.url || '' });
+      }
+    });
+
+    const badges = [];
+
+    // 1. Web search badge
+    if (uniqueToolTypes.has('web_search') || citations.some(c => c.url && c.url.startsWith('http'))) {
+      badges.push(`
+        <span class="inline-flex items-center px-2 py-0.5 rounded bg-[#101014] border border-neutral-800 text-[11px] font-mono text-neutral-300">
+          <span class="mr-1.5 text-sky-400">🌐</span>
+          <span>Web Search Grounded</span>
+        </span>
+      `);
+    }
+
+    // 2. Specific unique citations or document grounding badge
+    const specificDocs = uniqueCitations.filter(c => c.title !== 'Grounded Document');
+    if (specificDocs.length > 0) {
+      specificDocs.slice(0, 3).forEach(doc => {
+        badges.push(`
+          <span class="inline-flex items-center px-2 py-0.5 rounded bg-[#101014] border border-neutral-800 text-[11px] font-mono text-neutral-300 max-w-[240px] truncate" title="${this.escapeHtml(doc.title)}">
+            <span class="mr-1.5 text-emerald-400">📄</span>
+            <span class="truncate">${this.escapeHtml(doc.title)}</span>
+          </span>
+        `);
+      });
+      if (specificDocs.length > 3) {
+        badges.push(`
+          <span class="inline-flex items-center px-2 py-0.5 rounded bg-[#101014] border border-neutral-800 text-[11px] font-mono text-neutral-400">
+            +${specificDocs.length - 3} more sources
+          </span>
+        `);
+      }
+    } else if (citations.length > 0 || uniqueToolTypes.has('grounding')) {
+      badges.push(`
+        <span class="inline-flex items-center px-2 py-0.5 rounded bg-[#101014] border border-neutral-800 text-[11px] font-mono text-neutral-300">
+          <span class="mr-1.5 text-emerald-400">📄</span>
+          <span>Azure AI Document Grounded (${citations.length} ${citations.length === 1 ? 'citation' : 'citations'})</span>
+        </span>
+      `);
+    }
+
+    if (badges.length > 0) {
       sourcesHtml = `
-        <div class="mt-3 pt-3 border-t border-neutral-900/80 flex flex-wrap gap-2 text-[11px] font-mono">
-          ${citations.map(c => `
-            <span class="px-2 py-0.5 rounded bg-neutral-950 border border-neutral-800 text-neutral-300 flex items-center space-x-1">
-              <span>📄</span>
-              <span class="truncate max-w-[200px]" title="${c.title}">${this.escapeHtml(c.title)}</span>
-            </span>
-          `).join('')}
-          ${toolCalls.map(t => `
-            <span class="px-2 py-0.5 rounded bg-neutral-950 border border-neutral-800 text-neutral-300 flex items-center space-x-1">
-              <span>⚙️</span>
-              <span>${this.escapeHtml(t.type)}</span>
-            </span>
-          `).join('')}
+        <div class="mt-3 pt-3 border-t border-neutral-900/80 flex flex-wrap items-center gap-2">
+          ${badges.join('')}
         </div>
       `;
     }
@@ -818,6 +874,13 @@ class ChatApp {
         });
       });
     }
+
+    // Auto-Speak with Siri female voice if query was spoken by user
+    if (autoSpeak && responseText && listenBtn) {
+      setTimeout(() => {
+        this.tts.speak(responseText, rowId, listenBtn);
+      }, 400);
+    }
   }
 
   renderAssistantError(rowId, errMsg) {
@@ -835,6 +898,13 @@ class ChatApp {
         </div>
       </div>
     `;
+  }
+
+  scrollToResponseStart(rowId) {
+    const row = document.getElementById(rowId);
+    if (row) {
+      row.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    }
   }
 
   scrollToBottom() {
