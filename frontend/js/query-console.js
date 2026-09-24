@@ -187,7 +187,7 @@ class ChatApp {
 
     // Starter Prompts
     this.starters = {
-      preset1: "Analyze Microsoft Azure AI Foundry's enterprise moat in multi-agent orchestration compared to AWS Bedrock and GCP Vertex AI. Evaluate developer adoption, GPT-4.1-mini cost efficiency, and 90-day market capture strategy.",
+      preset1: "Analyze Microsoft Azure AI Foundry's enterprise moat in multi-agent orchestration compared to AWS Bedrock and GCP Vertex AI. Evaluate developer adoption, GPT-5-mini cost efficiency, and 90-day market capture strategy.",
       preset2: "Formulate an expansion plan for a B2B FinTech SaaS platform launching autonomous multi-agent underwriting on Azure. Include unit economics, gross margin projections, and a 30-60-90 day execution roadmap.",
       preset3: "Perform strategic due diligence and ROI modeling for replacing legacy enterprise business consulting with an Azure AI Foundry 4-agent autonomous swarm. Benchmarking cost savings, speed multipliers, and compliance.",
       preset4: "Evaluate market sizing (CAGR), top 3 competitor vulnerabilities, and 90-day execution roadmaps for AI-powered autonomous enterprise operations in 2026.",

@@ -16,8 +16,8 @@ class AzureFoundryService:
             "https://multi-agent-business.services.ai.azure.com/api/projects/multi-agent-business",
         )
         self.agent_name = "business-orchestrator"
-        self.agent_version = os.getenv("AZURE_AGENT_VERSION", "11")
-        self.model_name = os.getenv("AZURE_MODEL_NAME", "gpt-4.1-mini")
+        self.agent_version = os.getenv("AZURE_AGENT_VERSION", "12")
+        self.model_name = os.getenv("AZURE_MODEL_NAME", "gpt-5-mini")
         self._client: Optional[AIProjectClient] = None
         self._openai_client = None
 
@@ -251,7 +251,7 @@ class AzureFoundryService:
         input_tokens = getattr(usage, "input_tokens", 0) if usage else 0
         output_tokens = getattr(usage, "output_tokens", 0) if usage else 0
 
-        # Estimated cost for GPT-4.1-mini ($0.15/1M input, $0.60/1M output)
+        # Estimated cost for GPT-5-mini ($0.15/1M input, $0.60/1M output)
         est_cost = (input_tokens * 0.00000015) + (output_tokens * 0.00000060)
 
         return {

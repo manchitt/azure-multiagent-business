@@ -1,6 +1,6 @@
 # ⚡ AI-Powered Multi-Agent Business Assistant
 
-> Built on **Microsoft Azure AI Foundry** • **GPT-4.1-mini** • **Multi-Agent Orchestration (A2A)** • **Web Search** • **Document Grounding** • **FastAPI** • **Modern Frontend**
+> Built on **Microsoft Azure AI Foundry** • **GPT-5-mini** • **Multi-Agent Orchestration (A2A)** • **Web Search** • **Document Grounding** • **FastAPI** • **Modern Frontend**
 
 This application connects directly to your live **Azure AI Foundry** project to run your multi-agent architecture:
 
@@ -11,7 +11,7 @@ User (Web Interface)
 FastAPI Backend (POST /chat)
   │
   ▼
-Azure AI Foundry business-orchestrator:7 (GPT-4.1-mini)
+Azure AI Foundry business-orchestrator:12 (GPT-5-mini)
   │
   ▼
 A2A (Agent-to-Agent Mesh)

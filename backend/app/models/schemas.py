@@ -33,7 +33,7 @@ class AgentSpec(BaseModel):
     icon: str
     color: str
     description: str
-    model: str = "GPT-4.1-mini"
+    model: str = "GPT-5-mini"
     system_prompt: str
     tools: List[str]
     temperature: float = 0.2
@@ -58,7 +58,7 @@ class TelemetryStats(BaseModel):
     total_latency_ms: int
     a2a_handoff_count: int
     grounding_citations_count: int
-    model_name: str = "GPT-4.1-mini"
+    model_name: str = "GPT-5-mini"
 
 
 class BusinessReport(BaseModel):
